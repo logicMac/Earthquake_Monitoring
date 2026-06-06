@@ -173,7 +173,7 @@ function callGroqAPI($systemPrompt, $userMessage) {
         $apiKey = GROQ_API_KEY;
     }
 
-    if ($apiKey === false || $apiKey === null || trim($apiKey) === '' || $apiKey === 'YOUR_GROQ_API_KEY' || $apiKey === 'gsk_PASTE_YOUR_ACTUAL_API_KEY_HERE') {
+    if ($apiKey === false || $apiKey === null || trim($apiKey) === '') {
         return [
             'success' => false,
             'message' => "⚙️ QuakeBot is not configured yet. Set GROQ_API_KEY in your server environment (or .env loader) with your key from https://console.groq.com/."
