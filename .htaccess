@@ -1,5 +1,4 @@
 RewriteEngine On
-RewriteBase /client_earthquake/
 
 # Prevent directory listing
 Options -Indexes
@@ -8,4 +7,9 @@ Options -Indexes
 DirectoryIndex index.php
 
 # Error pages
-ErrorDocument 404 /client_earthquake/index.php
+ErrorDocument 404 /index.php
+
+# Ensure PHP files are processed
+<FilesMatch \.php$>
+    SetHandler application/x-httpd-php
+</FilesMatch>
