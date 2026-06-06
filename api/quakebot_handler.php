@@ -165,12 +165,18 @@ function formatRecentEvents($events) {
  * Call Groq API
  */
 function callGroqAPI($systemPrompt, $userMessage) {
-    $apiKey = GROQ_API_KEY;
-    
-    if ($apiKey === 'YOUR_GROQ_API_KEY' || $apiKey === 'gsk_PASTE_YOUR_ACTUAL_API_KEY_HERE' || empty($apiKey)) {
+    // Prefer env var (supports .env via environment configuration / php-fpm / WAMP)
+    $apiKey = getenv('GROQ_API_KEY');
+
+    // Fallback to constant defined in config/database.php (if env vars are not set)
+    if ($apiKey === false || $apiKey === null || trim($apiKey) === '') {
+        $apiKey = GROQ_API_KEY;
+    }
+
+    if ($apiKey === false || $apiKey === null || trim($apiKey) === '' || $apiKey === 'YOUR_GROQ_API_KEY' || $apiKey === 'gsk_PASTE_YOUR_ACTUAL_API_KEY_HERE') {
         return [
             'success' => false,
-            'message' => '⚙️ QuakeBot is not configured yet. Please add your Groq API key in config/database.php (Replace the entire gsk_PASTE_YOUR_ACTUAL_API_KEY_HERE with your real key from https://console.groq.com/)'
+            'message' => "⚙️ QuakeBot is not configured yet. Set GROQ_API_KEY in your server environment (or .env loader) with your key from https://console.groq.com/."
         ];
     }
     
