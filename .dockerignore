@@ -1,0 +1,35 @@
+# Git files
+.git
+.gitignore
+
+# Environment files (should be set via Render environment variables)
+.env
+
+# Documentation
+README.md
+FEATURES.md
+INSTALLATION.md
+
+# Test files (optional - remove this line if you want to keep test files)
+test_*.php
+debug_*.php
+
+# Database files (migrations should be run separately)
+database/
+
+# Node modules (if any)
+node_modules/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
