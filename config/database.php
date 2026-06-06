@@ -5,6 +5,21 @@
  * Earthquake Monitoring System
  */
 
+// Load .env file for local development
+if (file_exists(__DIR__ . '/../.env')) {
+    $lines = file(__DIR__ . '/../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        if (strpos($line, '=') !== false) {
+            list($key, $value) = explode('=', $line, 2);
+            $key = trim($key);
+            $value = trim($value, " \t\n\r\0\x0B\"'");
+            putenv("$key=$value");
+            $_ENV[$key] = $value;
+        }
+    }
+}
+
 // Set timezone to Asia/Manila (Philippine Time)
 @date_default_timezone_set('Asia/Manila');
 

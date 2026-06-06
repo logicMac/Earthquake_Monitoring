@@ -163,8 +163,16 @@ requireLogin();
                     </div>
                 </div>
                 <div class="pt-3" style="border-top: 1px solid var(--border-primary);">
-                    <p class="text-xs theme-text-tertiary">MMI Scale</p>
-                    <p id="currentMMI" class="text-lg font-bold theme-text-primary">-</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <p class="text-xs theme-text-tertiary">Est. Magnitude</p>
+                            <p id="currentMagnitude" class="text-lg font-bold theme-text-primary">-</p>
+                        </div>
+                        <div>
+                            <p class="text-xs theme-text-tertiary">MMI Scale</p>
+                            <p id="currentMMI" class="text-lg font-bold theme-text-primary">-</p>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -219,6 +227,7 @@ requireLogin();
                     <thead>
                         <tr class="theme-table-header" style="border-bottom: 2px solid var(--table-border);">
                             <th class="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm uppercase">Timestamp</th>
+                            <th class="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm uppercase">Magnitude</th>
                             <th class="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm uppercase">Intensity</th>
                             <th class="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm uppercase hidden md:table-cell">MMI Scale</th>
                             <th class="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm uppercase">Alert</th>
@@ -226,7 +235,7 @@ requireLogin();
                     </thead>    
                     <tbody id="logsTable">
                         <tr>
-                            <td colspan="4" class="text-center py-8 theme-text-tertiary">
+                            <td colspan="5" class="text-center py-8 theme-text-tertiary">
                                 <div class="loading-skeleton"></div>
                             </td>
                         </tr>
@@ -362,15 +371,24 @@ requireLogin();
                         // Update current intensity
                         document.getElementById('currentIntensity').textContent = parseFloat(data.latest.intensity).toFixed(2);
                         
+                        // Update magnitude display
+                        const magnitudeDisplay = data.latest.magnitude ? 
+                            parseFloat(data.latest.magnitude).toFixed(1) : 
+                            'N/A';
+                        document.getElementById('currentMagnitude').textContent = magnitudeDisplay;
+                        
                         // Update MMI display
                         const mmiDisplay = data.latest.mmi_level ? 
-                            `${data.latest.mmi_level} - ${data.latest.mmi_name}` : 
-                            'Calculating...';
+                            `${data.latest.mmi_level}` : 
+                            'N/A';
                         document.getElementById('currentMMI').textContent = mmiDisplay;
                         
                         // Update last event
-                        const eventText = data.latest.mmi_level ? 
-                            `${parseFloat(data.latest.intensity).toFixed(2)} Gal (MMI ${data.latest.mmi_level})` :
+                        const magnitudeText = data.latest.magnitude ? 
+                            `M${parseFloat(data.latest.magnitude).toFixed(1)}` : 
+                            '';
+                        const eventText = magnitudeText ? 
+                            `${magnitudeText} - ${parseFloat(data.latest.intensity).toFixed(2)} Gal` :
                             `${parseFloat(data.latest.intensity).toFixed(2)} Gal`;
                         document.getElementById('lastEvent').textContent = eventText;
                         document.getElementById('lastEventTime').textContent = new Date(data.latest.timestamp).toLocaleString();
@@ -406,7 +424,7 @@ requireLogin();
         function updateLogsTable(logs) {
             const tbody = document.getElementById('logsTable');
             if (!logs || logs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 theme-text-tertiary">No events recorded</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 theme-text-tertiary">No events recorded</td></tr>';
                 return;
             }
             
@@ -416,12 +434,19 @@ requireLogin();
                 const mmiColor = getMMIColor(log.mmi_level);
                 const delay = Math.min(index * 50, 400);
                 const intensityColor = parseFloat(log.intensity) >= 80 ? 'text-red-600' : 'theme-text-primary';
+                const magnitudeText = log.magnitude ? parseFloat(log.magnitude).toFixed(1) : 'N/A';
+                const magnitudeColor = log.magnitude >= 7.0 ? 'text-red-600' : (log.magnitude >= 5.0 ? 'text-orange-600' : 'theme-text-primary');
                 
                 return `
                 <tr class="theme-table-row hover:bg-opacity-50 transition stagger-fade-in" style="animation-delay: ${delay}ms">
                     <td class="py-2 sm:py-3 px-2 sm:px-4 font-medium theme-text-secondary text-xs sm:text-sm">${date.toLocaleString('en-PH', {timeZone: 'Asia/Manila'})}</td>
                     <td class="py-2 sm:py-3 px-2 sm:px-4">
-                        <span class="text-lg sm:text-2xl font-bold ${intensityColor}">
+                        <span class="text-lg sm:text-xl font-bold ${magnitudeColor}">
+                            ${magnitudeText}
+                        </span>
+                    </td>
+                    <td class="py-2 sm:py-3 px-2 sm:px-4">
+                        <span class="text-base sm:text-lg font-semibold ${intensityColor}">
                             ${parseFloat(log.intensity).toFixed(2)}
                         </span>
                         <span class="text-xs theme-text-tertiary ml-1">Gal</span>

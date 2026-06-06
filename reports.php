@@ -17,7 +17,9 @@ $min_intensity = $_GET['min_intensity'] ?? 0;
 $stats_query = "SELECT 
     COUNT(*) as total_events,
     MAX(intensity) as max_intensity,
+    MAX(magnitude) as max_magnitude,
     AVG(intensity) as avg_intensity,
+    AVG(magnitude) as avg_magnitude,
     SUM(CASE WHEN alert_sent = 1 THEN 1 ELSE 0 END) as alerts_sent,
     SUM(CASE WHEN intensity >= 80 THEN 1 ELSE 0 END) as high_intensity_events
 FROM seismic_logs 
@@ -217,54 +219,64 @@ $sms_count = $conn->query("SELECT COUNT(*) as count FROM sms_logs WHERE DATE(sen
         </div>
 
         <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-            <div class="theme-card rounded-xl p-6 card-shadow card-hover animate-scale-in delay-300 border-l-4 border-gray-900">
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 mb-8">
+            <div class="theme-card rounded-xl p-4 sm:p-6 card-shadow card-hover animate-scale-in delay-300 border-l-4 border-gray-900">
                 <div class="flex items-center justify-between mb-2">
                     <p class="theme-text-tertiary text-sm font-medium">Total Events</p>
-                    <svg class="w-8 h-8 theme-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 theme-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                     </svg>
                 </div>
-                <p class="text-3xl font-bold theme-text-primary"><?php echo $stats['total_events']; ?></p>
+                <p class="text-2xl sm:text-3xl font-bold theme-text-primary"><?php echo $stats['total_events']; ?></p>
             </div>
-            <div class="theme-card rounded-xl p-6 card-shadow card-hover animate-scale-in delay-350 border-l-4 border-red-600">
+            <div class="theme-card rounded-xl p-4 sm:p-6 card-shadow card-hover animate-scale-in delay-350 border-l-4 border-red-600">
                 <div class="flex items-center justify-between mb-2">
-                    <p class="theme-text-tertiary text-sm font-medium">Max Intensity</p>
-                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <p class="theme-text-tertiary text-sm font-medium">Max Magnitude</p>
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
                 </div>
-                <p class="text-3xl font-bold text-red-600"><?php echo number_format($stats['max_intensity'], 2); ?></p>
-                <p class="text-xs theme-text-tertiary">Gal</p>
+                <p class="text-2xl sm:text-3xl font-bold text-red-600"><?php echo $stats['max_magnitude'] ? number_format($stats['max_magnitude'], 1) : 'N/A'; ?></p>
+                <p class="text-xs theme-text-tertiary">Est.</p>
             </div>
-            <div class="theme-card rounded-xl p-6 card-shadow card-hover animate-scale-in delay-400 border-l-4 border-blue-600">
+            <div class="theme-card rounded-xl p-4 sm:p-6 card-shadow card-hover animate-scale-in delay-400 border-l-4 border-orange-600">
                 <div class="flex items-center justify-between mb-2">
-                    <p class="theme-text-tertiary text-sm font-medium">Avg Intensity</p>
-                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                </div>
-                <p class="text-3xl font-bold theme-text-primary"><?php echo number_format($stats['avg_intensity'], 2); ?></p>
-                <p class="text-xs theme-text-tertiary">Gal</p>
-            </div>
-            <div class="theme-card rounded-xl p-6 card-shadow card-hover animate-scale-in delay-450 border-l-4 border-orange-600">
-                <div class="flex items-center justify-between mb-2">
-                    <p class="theme-text-tertiary text-sm font-medium">High Intensity</p>
-                    <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <p class="theme-text-tertiary text-sm font-medium">Max Intensity</p>
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                     </svg>
                 </div>
-                <p class="text-3xl font-bold text-orange-600"><?php echo $stats['high_intensity_events']; ?></p>
+                <p class="text-2xl sm:text-3xl font-bold text-orange-600"><?php echo number_format($stats['max_intensity'], 2); ?></p>
+                <p class="text-xs theme-text-tertiary">Gal</p>
+            </div>
+            <div class="theme-card rounded-xl p-4 sm:p-6 card-shadow card-hover animate-scale-in delay-450 border-l-4 border-blue-600">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="theme-text-tertiary text-sm font-medium">Avg Magnitude</p>
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <p class="text-2xl sm:text-3xl font-bold theme-text-primary"><?php echo $stats['avg_magnitude'] ? number_format($stats['avg_magnitude'], 1) : 'N/A'; ?></p>
+                <p class="text-xs theme-text-tertiary">Est.</p>
+            </div>
+            <div class="theme-card rounded-xl p-4 sm:p-6 card-shadow card-hover animate-scale-in delay-500 border-l-4 border-yellow-600">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="theme-text-tertiary text-sm font-medium">High Intensity</p>
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <p class="text-2xl sm:text-3xl font-bold text-yellow-600"><?php echo $stats['high_intensity_events']; ?></p>
                 <p class="text-xs theme-text-tertiary">≥80 Gal</p>
             </div>
-            <div class="theme-card rounded-xl p-6 card-shadow card-hover animate-scale-in delay-500 border-l-4 border-green-600">
+            <div class="theme-card rounded-xl p-4 sm:p-6 card-shadow card-hover animate-scale-in delay-550 border-l-4 border-green-600">
                 <div class="flex items-center justify-between mb-2">
                     <p class="theme-text-tertiary text-sm font-medium">SMS Sent</p>
-                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
                     </svg>
                 </div>
-                <p class="text-3xl font-bold text-green-600"><?php echo $sms_count; ?></p>
+                <p class="text-2xl sm:text-3xl font-bold text-green-600"><?php echo $sms_count; ?></p>
                 <p class="text-xs theme-text-tertiary">Messages</p>
             </div>
         </div>
@@ -278,8 +290,10 @@ $sms_count = $conn->query("SELECT COUNT(*) as count FROM sms_logs WHERE DATE(sen
                         <tr class="theme-table-header" style="border-bottom: 2px solid var(--table-border);">
                             <th class="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm uppercase">ID</th>
                             <th class="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm uppercase">Timestamp</th>
-                            <th class="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm uppercase hidden md:table-cell">Device</th>
+                            <th class="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm uppercase hidden lg:table-cell">Device</th>
+                            <th class="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm uppercase">Magnitude</th>
                             <th class="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm uppercase">Intensity</th>
+                            <th class="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm uppercase hidden md:table-cell">MMI</th>
                             <th class="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm uppercase">Alert</th>
                         </tr>
                     </thead>
@@ -287,13 +301,32 @@ $sms_count = $conn->query("SELECT COUNT(*) as count FROM sms_logs WHERE DATE(sen
                         <?php if ($events->num_rows > 0): ?>
                             <?php while ($event = $events->fetch_assoc()): ?>
                             <tr class="theme-table-row hover:bg-opacity-50 transition">
-                                <td class="py-2 sm:py-3 px-2 sm:px-4 theme-text-secondary text-xs sm:text-sm">#<?php echo $event['id']; ?></td>
+                                <td class="py-2 sm:py-3 px-2 sm:px-4 theme-text-secondary text-xs sm:text-sm font-mono">#<?php echo $event['id']; ?></td>
                                 <td class="py-2 sm:py-3 px-2 sm:px-4 theme-text-secondary text-xs sm:text-sm"><?php echo date('M d, h:i A', strtotime($event['timestamp'])); ?></td>
-                                <td class="py-2 sm:py-3 px-2 sm:px-4 theme-text-secondary font-mono text-xs hidden md:table-cell"><?php echo $event['device_id']; ?></td>
+                                <td class="py-2 sm:py-3 px-2 sm:px-4 theme-text-secondary font-mono text-xs hidden lg:table-cell"><?php echo $event['device_id']; ?></td>
                                 <td class="py-2 sm:py-3 px-2 sm:px-4">
-                                    <span class="text-base sm:text-lg font-bold <?php echo $event['intensity'] >= 80 ? 'text-red-600' : 'theme-text-primary'; ?>">
+                                    <?php if ($event['magnitude']): ?>
+                                        <span class="text-base sm:text-lg font-bold <?php echo $event['magnitude'] >= 7.0 ? 'text-red-600' : ($event['magnitude'] >= 5.0 ? 'text-orange-600' : 'theme-text-primary'); ?>">
+                                            <?php echo number_format($event['magnitude'], 1); ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-xs theme-text-tertiary">N/A</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="py-2 sm:py-3 px-2 sm:px-4">
+                                    <span class="text-base sm:text-lg font-semibold <?php echo $event['intensity'] >= 80 ? 'text-red-600' : 'theme-text-primary'; ?>">
                                         <?php echo number_format($event['intensity'], 2); ?>
                                     </span>
+                                    <span class="text-xs theme-text-tertiary ml-1">Gal</span>
+                                </td>
+                                <td class="py-2 sm:py-3 px-2 sm:px-4 hidden md:table-cell">
+                                    <?php if ($event['mmi_level']): ?>
+                                        <span class="text-sm font-semibold theme-text-primary">
+                                            <?php echo $event['mmi_level']; ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-xs theme-text-tertiary">N/A</span>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="py-2 sm:py-3 px-2 sm:px-4">
                                     <?php if ($event['alert_sent']): ?>
@@ -310,7 +343,7 @@ $sms_count = $conn->query("SELECT COUNT(*) as count FROM sms_logs WHERE DATE(sen
                             <?php endwhile; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="5" class="text-center py-8 theme-text-tertiary text-sm">No events found for the selected period</td>
+                                <td colspan="7" class="text-center py-8 theme-text-tertiary text-sm">No events found for the selected period</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>

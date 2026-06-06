@@ -4,6 +4,11 @@
  * Use this to test your UniSMS configuration
  */
 
+// Prevent caching
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -27,7 +32,16 @@ require_once 'includes/sms_handler.php';
             
             <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
                 <p class="text-sm text-blue-800">
-                    <strong>Note:</strong> Make sure you've updated your API key in <code>config/database.php</code>
+                    <strong>Note:</strong> Make sure you've updated your API key in <code>.env</code> file
+                </p>
+            </div>
+            
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
+                <p class="text-sm text-yellow-800">
+                    <strong>⚠️ Test Message Preview:</strong><br>
+                    This test sends the actual earthquake alert format:<br><br>
+                    <em>"ND-SCPM Earthquake Alert: Est. magnitude 7.5 detected. Ground motion: 176.00 Gal. Intensity: MMI VII (Very Strong). Recorded on [current date/time]. Drop, cover, and hold on. Move to open area if safe."</em><br><br>
+                    <strong>Note:</strong> Magnitude is estimated from local ground motion. For official magnitude, check PHIVOLCS reports.
                 </p>
             </div>
 
@@ -133,8 +147,8 @@ require_once 'includes/sms_handler.php';
 
                 <div>
                     <h3 class="font-semibold text-gray-900 mb-2">2. Update Configuration</h3>
-                    <p>Open <code class="bg-gray-100 px-2 py-1 rounded">config/database.php</code> and update:</p>
-                    <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg mt-2 overflow-x-auto text-xs">define('SMS_API_KEY', 'your_actual_api_key_here');</pre>
+                    <p>Open <code class="bg-gray-100 px-2 py-1 rounded">.env</code> file and update:</p>
+                    <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg mt-2 overflow-x-auto text-xs">SMS_API_KEY=your_actual_api_key_here</pre>
                 </div>
 
                 <div>
@@ -150,6 +164,17 @@ require_once 'includes/sms_handler.php';
                 <div>
                     <h3 class="font-semibold text-gray-900 mb-2">4. Test</h3>
                     <p>Use this page to send a test SMS and verify everything works!</p>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold text-gray-900 mb-2">5. Troubleshooting Spam Filters</h3>
+                    <p class="mb-2">If messages still get blocked with HTTP 422 error:</p>
+                    <ul class="list-disc list-inside space-y-1 ml-4 text-xs">
+                        <li>Your account might need verification (check UniSMS dashboard)</li>
+                        <li>Add credits first - some filters check account balance</li>
+                        <li>Contact UniSMS support to whitelist your account for institutional alerts</li>
+                        <li>Verify sender name is approved in dashboard settings</li>
+                    </ul>
                 </div>
             </div>
 

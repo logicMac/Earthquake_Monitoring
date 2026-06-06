@@ -17,13 +17,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($intensity > 0) {
         $conn = getDBConnection();
         
-        // Calculate MMI scale
+        // Calculate MMI scale and magnitude
         $mmi = IntensityCalculator::getMMIScale($intensity);
         $percent_g = IntensityCalculator::galToPercentG($intensity);
+        $magnitude = IntensityCalculator::estimateMagnitude($intensity);
         
-        // Insert seismic log with MMI data
-        $stmt = $conn->prepare("INSERT INTO seismic_logs (device_id, intensity, mmi_level, mmi_name, percent_g) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sdssd", $device_id, $intensity, $mmi['level'], $mmi['name'], $percent_g);
+        // Insert seismic log with MMI data and magnitude estimate
+        $stmt = $conn->prepare("INSERT INTO seismic_logs (device_id, intensity, magnitude, mmi_level, mmi_name, percent_g) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sddssd", $device_id, $intensity, $magnitude, $mmi['level'], $mmi['name'], $percent_g);
         
         if ($stmt->execute()) {
             $log_id = $conn->insert_id;
@@ -44,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'status' => 'success',
                 'log_id' => $log_id,
                 'intensity' => $intensity,
+                'magnitude' => $magnitude,
                 'percent_g' => round($percent_g, 2),
                 'mmi_level' => $mmi['level'],
                 'mmi_name' => $mmi['name'],

@@ -11,6 +11,8 @@
  * - Simple REST API with Basic Auth
  */
 
+require_once __DIR__ . '/intensity_calculator.php';
+
 /**
  * Send bulk SMS alert to all active recipients
  * 
@@ -29,14 +31,18 @@ function sendBulkSMSAlert($conn, $log_id, $intensity, $mmi = null) {
         return false;
     }
     
-    // Prepare message with MMI info if available
-    $mmi_info = $mmi ? " (MMI {$mmi['level']} - {$mmi['name']})" : "";
-    $message = "🚨 EARTHQUAKE ALERT!\n\n"
-             . "Intensity: " . number_format($intensity, 2) . " Gal" . $mmi_info . "\n"
-             . "Location: ND-SCPM\n"
-             . "Time: " . date('M d, Y h:i A') . "\n\n"
-             . "⚠️ DROP, COVER, and HOLD ON!\n"
-             . "Proceed to open field if safe.";
+    // Calculate intensity metrics
+    $magnitude = IntensityCalculator::estimateMagnitude($intensity);
+    $percent_g = IntensityCalculator::galToPercentG($intensity);
+    
+    // Build alert message with magnitude estimate
+    $intensity_text = number_format($intensity, 2);
+    $mmi_text = $mmi ? " Intensity: MMI {$mmi['level']} ({$mmi['name']})." : "";
+    $datetime = date('F j, Y \a\t g:i A');
+    
+    $message = "ND-SCPM Earthquake Alert: Est. magnitude {$magnitude} detected. Ground motion: {$intensity_text} Gal.{$mmi_text} "
+             . "Recorded on {$datetime}. "
+             . "Drop, cover, and hold on. Move to open area if safe.";
     
     $success_count = 0;
     
@@ -89,16 +95,19 @@ function sendSMS($phone, $message) {
     // Format phone number (ensure it starts with +63)
     $phone = formatPhoneNumber($phone);
     
-    // Prepare request data
+    // Prepare request data (UniSMS expects 'recipient' and 'content')
+    // Add 'sender_name' to customize the SMS header
     $data = json_encode([
         'recipient' => $phone,
-        'content' => $message
+        'content' => $message,
+        'sender_name' => 'NDSCPM'  // Custom sender name (11 chars max, alphanumeric)
     ]);
     
     // Initialize cURL
     $ch = curl_init($apiUrl);
     
     // Set cURL options for UniSMS API
+    // Uses Basic Authentication: API key as username, empty password
     curl_setopt_array($ch, [
         CURLOPT_POST => true,
         CURLOPT_POSTFIELDS => $data,
@@ -109,7 +118,8 @@ function sendSMS($phone, $message) {
         ],
         CURLOPT_USERPWD => $apiKey . ':', // Basic Auth: API key as username, empty password
         CURLOPT_TIMEOUT => 30,
-        CURLOPT_SSL_VERIFYPEER => true
+        CURLOPT_SSL_VERIFYPEER => false,  // Disable for testing (enable in production)
+        CURLOPT_SSL_VERIFYHOST => false
     ]);
     
     // Execute request
@@ -117,6 +127,10 @@ function sendSMS($phone, $message) {
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $curl_error = curl_error($ch);
     curl_close($ch);
+    
+    // Debug logging
+    error_log("UniSMS Request: URL=$apiUrl, Phone=$phone, HTTP=$http_code");
+    error_log("UniSMS Response: " . substr($response, 0, 500));
     
     // Handle cURL errors
     if ($curl_error) {
@@ -133,20 +147,46 @@ function sendSMS($phone, $message) {
     // Check HTTP status
     if ($http_code === 200 || $http_code === 201) {
         // Success
+        error_log("UniSMS: SMS sent successfully to $phone");
         return [
             'success' => true,
             'message' => 'SMS sent successfully',
             'data' => $response_data
         ];
+    } else if ($http_code === 401 || $http_code === 403) {
+        // Authentication error
+        error_log("UniSMS Auth Error (HTTP $http_code): Check your API key");
+        return [
+            'success' => false,
+            'message' => 'Authentication failed - check your API key',
+            'http_code' => $http_code
+        ];
+    } else if ($http_code === 422) {
+        // Validation error (spam filter, invalid format, etc.)
+        $error_message = 'Validation error';
+        if (isset($response_data['errors'])) {
+            $errors = [];
+            foreach ($response_data['errors'] as $field => $messages) {
+                $errors[] = "$field: " . implode(', ', $messages);
+            }
+            $error_message = implode('; ', $errors);
+        }
+        error_log("UniSMS Validation Error: " . $error_message);
+        return [
+            'success' => false,
+            'message' => $error_message,
+            'http_code' => $http_code
+        ];
     } else {
-        // Failed
+        // Other errors
         $error_message = isset($response_data['message']) ? $response_data['message'] : 'Unknown error';
         error_log("UniSMS Error (HTTP $http_code): " . $error_message);
         
         return [
             'success' => false,
             'message' => $error_message,
-            'http_code' => $http_code
+            'http_code' => $http_code,
+            'response' => $response
         ];
     }
 }
@@ -189,10 +229,18 @@ function formatPhoneNumber($phone) {
  * @return array Test result
  */
 function testSMS($phone) {
-    $message = "🧪 TEST MESSAGE\n\n"
-             . "This is a test from ND-SCPM Earthquake Monitoring System.\n\n"
-             . "If you received this, SMS alerts are working correctly!\n\n"
-             . "Time: " . date('M d, Y h:i A');
+    // Use the actual earthquake alert message format for realistic testing
+    $intensity_gal = 176; // Test with SMS threshold value
+    $magnitude = IntensityCalculator::estimateMagnitude($intensity_gal);
+    $mmi = IntensityCalculator::getMMIScale($intensity_gal);
+    $intensity_text = number_format($intensity_gal, 2);
+    $datetime = date('F j, Y \a\t g:i A');
+    
+    $mmi_text = " Intensity: MMI {$mmi['level']} ({$mmi['name']}).";
+    
+    $message = "ND-SCPM Earthquake Alert: Est. magnitude {$magnitude} detected. Ground motion: {$intensity_text} Gal.{$mmi_text} "
+             . "Recorded on {$datetime}. "
+             . "Drop, cover, and hold on. Move to open area if safe.";
     
     return sendSMS($phone, $message);
 }

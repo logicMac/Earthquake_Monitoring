@@ -136,5 +136,47 @@ class IntensityCalculator {
         $intensity = self::getMMIScale($gal);
         return $intensity['alarm_level'] >= 2;
     }
+    
+    /**
+     * Estimate earthquake magnitude from PGA (Gal)
+     * 
+     * IMPORTANT: This is an ESTIMATE based on local ground motion.
+     * Actual magnitude requires data from multiple seismic stations.
+     * 
+     * Uses empirical relationship: M ≈ 2/3 * MMI + 1
+     * This assumes you're relatively close to the epicenter.
+     * 
+     * @param float $gal Peak Ground Acceleration in Gal
+     * @return float Estimated magnitude (use with caution)
+     */
+    public static function estimateMagnitude($gal) {
+        $percent_g = self::galToPercentG($gal);
+        
+        // Convert MMI to numeric value
+        if ($percent_g < 0.17) {
+            $mmi_numeric = 1;
+        } elseif ($percent_g < 1.4) {
+            $mmi_numeric = 2.5;
+        } elseif ($percent_g < 3.9) {
+            $mmi_numeric = 4;
+        } elseif ($percent_g < 9.2) {
+            $mmi_numeric = 5;
+        } elseif ($percent_g < 18) {
+            $mmi_numeric = 6;
+        } elseif ($percent_g < 34) {
+            $mmi_numeric = 7;
+        } elseif ($percent_g < 65) {
+            $mmi_numeric = 8;
+        } elseif ($percent_g < 124) {
+            $mmi_numeric = 9;
+        } else {
+            $mmi_numeric = 10;
+        }
+        
+        // Empirical formula
+        $magnitude = (2/3) * $mmi_numeric + 1;
+        
+        return round($magnitude, 1);
+    }
 }
 ?>

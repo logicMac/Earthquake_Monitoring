@@ -1,13 +1,21 @@
-# Secrets / env
+# Environment variables (contains secrets)
 .env
-.env.*
 
-# Composer
-/vendor
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# OS files  
+.DS_Store
+Thumbs.db
 
 # Logs
 *.log
+error_log
 
-# Local config
-config.php
-
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~

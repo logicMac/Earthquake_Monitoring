@@ -40,8 +40,13 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 WiFiClientSecure secureClient;
 
 // ── Thresholds (Gal = cm/s²) ──────────────────────────────────────────────────
-#define THRESHOLD_LOW  25.0   // Level 2: Local alert (buzzer + LCD)
-#define THRESHOLD_HIGH 176.0  // Level 3: Emergency (SMS + buzzer + LCD)
+// TESTING VALUES — VERY SENSITIVE FOR HAND SHAKING
+#define THRESHOLD_LOW  5.0    // Level 2: Easy to trigger by shaking
+#define THRESHOLD_HIGH 50.0   // Level 3: Hard shake
+
+// PRODUCTION VALUES (comment out above, uncomment below after testing)
+// #define THRESHOLD_LOW  25.0   // Level 2: Local alert (buzzer + LCD)
+// #define THRESHOLD_HIGH 176.0  // Level 3: Emergency (SMS + buzzer + LCD)
 
 // ── State Variables ───────────────────────────────────────────────────────────
 float    currentGal       = 0.0;
@@ -90,6 +95,19 @@ void setup() {
   // SSL — skip certificate verification (required for InfinityFree free SSL)
   secureClient.setInsecure();
 
+  // WiFi Network Scanner (helps debug connection issues)
+  Serial.println("\n[WiFi] Scanning for networks...");
+  int n = WiFi.scanNetworks();
+  Serial.printf("[WiFi] Found %d networks:\n", n);
+  for (int i = 0; i < n; i++) {
+    Serial.printf("  %d: %s (Signal: %d dBm) %s\n", 
+      i+1, 
+      WiFi.SSID(i).c_str(), 
+      WiFi.RSSI(i),
+      (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "OPEN" : "SECURED"
+    );
+  }
+
   // WiFi
   lcd.clear();
   lcd.setCursor(0, 0); lcd.print("Connecting WiFi");
@@ -97,15 +115,19 @@ void setup() {
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  Serial.printf("[WiFi] Connecting to '%s'", ssid);
+  Serial.printf("\n[WiFi] Connecting to '%s'\n", ssid);
+  Serial.printf("[WiFi] Password: %s\n", password);
 
-  // Wait up to 20 seconds — hotspots are slower than routers
+  // Wait up to 30 seconds — some hotspots are very slow
   int attempts = 0;
-  while (WiFi.status() != WL_CONNECTED && attempts < 40) {
+  while (WiFi.status() != WL_CONNECTED && attempts < 60) {
     delay(500);
     Serial.print(".");
+    lcd.setCursor(attempts % 16, 1);
+    lcd.print(".");
     attempts++;
   }
+  Serial.println();
 
   if (WiFi.status() == WL_CONNECTED) {
     Serial.printf("\n[WiFi] Connected! IP: %s\n", WiFi.localIP().toString().c_str());

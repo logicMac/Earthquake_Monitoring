@@ -31,7 +31,7 @@ header('Content-Disposition: attachment; filename="earthquake_report_' . date('Y
 $output = fopen('php://output', 'w');
 
 // Write CSV header
-fputcsv($output, ['ID', 'Timestamp', 'Device ID', 'Intensity (Gal)', 'Alert Sent']);
+fputcsv($output, ['ID', 'Timestamp', 'Device ID', 'Est. Magnitude', 'Intensity (Gal)', '%g', 'MMI Level', 'MMI Name', 'Alert Sent']);
 
 // Write data rows
 while ($event = $events->fetch_assoc()) {
@@ -39,7 +39,11 @@ while ($event = $events->fetch_assoc()) {
         $event['id'],
         $event['timestamp'],
         $event['device_id'],
+        $event['magnitude'] ? number_format($event['magnitude'], 1) : 'N/A',
         number_format($event['intensity'], 2),
+        $event['percent_g'] ? number_format($event['percent_g'], 2) : 'N/A',
+        $event['mmi_level'] ?? 'N/A',
+        $event['mmi_name'] ?? 'N/A',
         $event['alert_sent'] ? 'Yes' : 'No'
     ]);
 }
