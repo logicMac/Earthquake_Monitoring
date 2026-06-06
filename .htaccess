@@ -1,0 +1,11 @@
+RewriteEngine On
+RewriteBase /client_earthquake/
+
+# Prevent directory listing
+Options -Indexes
+
+# Set default file
+DirectoryIndex index.php
+
+# Error pages
+ErrorDocument 404 /client_earthquake/index.php

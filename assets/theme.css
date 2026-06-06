@@ -1,0 +1,353 @@
+/**
+ * Dark/Light Theme Styles
+ * CSS variables and theme-specific styles
+ */
+
+/* Smooth Scroll */
+html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+/* Light Mode (Default) */
+:root {
+    --bg-primary: #f9fafb;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f3f4f6;
+    
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-tertiary: #6b7280;
+    
+    --border-primary: #e5e7eb;
+    --border-secondary: #d1d5db;
+    
+    --card-bg: #ffffff;
+    --card-border: #e5e7eb;
+    --card-shadow: rgba(0, 0, 0, 0.1);
+    
+    --nav-bg: #ffffff;
+    --nav-border: #e5e7eb;
+    
+    --button-primary-bg: #000000;
+    --button-primary-text: #ffffff;
+    --button-primary-hover: #1f2937;
+    
+    --button-secondary-bg: #f3f4f6;
+    --button-secondary-text: #111827;
+    --button-secondary-hover: #e5e7eb;
+    
+    --input-bg: #f9fafb;
+    --input-border: #d1d5db;
+    --input-text: #111827;
+    
+    --chart-line: #000000;
+    --chart-gradient-start: rgba(0, 0, 0, 0.15);
+    --chart-gradient-end: rgba(0, 0, 0, 0.01);
+    --chart-grid: #e5e7eb;
+    --chart-text: #6b7280;
+    
+    --table-header-bg: transparent;
+    --table-header-text: #6b7280;
+    --table-row-hover: #f9fafb;
+    --table-border: #e5e7eb;
+    
+    --alert-bg: #fef2f2;
+    --alert-border: #ef4444;
+    --alert-text: #991b1b;
+}
+
+/* Dark Mode */
+[data-theme="dark"],
+.dark-mode {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
+    
+    --border-primary: #334155;
+    --border-secondary: #475569;
+    
+    --card-bg: #1e293b;
+    --card-border: #334155;
+    --card-shadow: rgba(0, 0, 0, 0.3);
+    
+    --nav-bg: #1e293b;
+    --nav-border: #334155;
+    
+    --button-primary-bg: #f1f5f9;
+    --button-primary-text: #0f172a;
+    --button-primary-hover: #e2e8f0;
+    
+    --button-secondary-bg: #334155;
+    --button-secondary-text: #f1f5f9;
+    --button-secondary-hover: #475569;
+    
+    --input-bg: #334155;
+    --input-border: #475569;
+    --input-text: #f1f5f9;
+    
+    --chart-line: #60a5fa;
+    --chart-gradient-start: rgba(96, 165, 250, 0.3);
+    --chart-gradient-end: rgba(96, 165, 250, 0.01);
+    --chart-grid: #334155;
+    --chart-text: #94a3b8;
+    
+    --table-header-bg: transparent;
+    --table-header-text: #94a3b8;
+    --table-row-hover: #334155;
+    --table-border: #334155;
+    
+    --alert-bg: #7f1d1d;
+    --alert-border: #ef4444;
+    --alert-text: #fecaca;
+}
+
+/* Apply theme variables */
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Navigation */
+nav {
+    background-color: var(--nav-bg) !important;
+    border-color: var(--nav-border) !important;
+}
+
+nav h1, nav .nav-title {
+    color: var(--text-primary) !important;
+}
+
+nav p, nav .nav-subtitle {
+    color: var(--text-tertiary) !important;
+}
+
+/* Cards */
+.theme-card {
+    background-color: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Text colors */
+.theme-text-primary {
+    color: var(--text-primary) !important;
+}
+
+.theme-text-secondary {
+    color: var(--text-secondary) !important;
+}
+
+.theme-text-tertiary {
+    color: var(--text-tertiary) !important;
+}
+
+/* Buttons */
+.theme-btn-primary {
+    background-color: var(--button-primary-bg) !important;
+    color: var(--button-primary-text) !important;
+}
+
+.theme-btn-primary:hover {
+    background-color: var(--button-primary-hover) !important;
+}
+
+.theme-btn-secondary {
+    background-color: var(--button-secondary-bg) !important;
+    color: var(--button-secondary-text) !important;
+    border-color: var(--border-secondary) !important;
+}
+
+.theme-btn-secondary:hover {
+    background-color: var(--button-secondary-hover) !important;
+}
+
+/* Inputs */
+.theme-input {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--input-text) !important;
+}
+
+/* Tables */
+.theme-table-header {
+    color: var(--table-header-text) !important;
+    border-color: var(--table-border) !important;
+}
+
+.theme-table-row {
+    border-color: var(--table-border) !important;
+}
+
+.theme-table-row:hover {
+    background-color: var(--table-row-hover) !important;
+}
+
+/* Logo icon in dark mode */
+[data-theme="dark"] .logo-icon,
+.dark-mode .logo-icon {
+    background-color: var(--button-primary-bg) !important;
+}
+
+[data-theme="dark"] .logo-icon svg,
+.dark-mode .logo-icon svg {
+    color: var(--button-primary-text) !important;
+}
+
+/* Alert banner */
+.alert-banner {
+    background-color: var(--alert-bg) !important;
+    border-color: var(--alert-border) !important;
+    color: var(--alert-text) !important;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 0.5rem;
+    background-color: var(--button-secondary-bg);
+    border: 2px solid var(--border-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-toggle:hover {
+    background-color: var(--button-secondary-hover);
+    transform: scale(1.05);
+}
+
+.theme-toggle svg {
+    width: 20px;
+    height: 20px;
+    color: var(--text-primary);
+    transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover svg {
+    transform: rotate(20deg);
+}
+
+/* Smooth transitions for theme changes */
+* {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Smooth scrollbar styling */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-secondary);
+    border-radius: 10px;
+    border: 2px solid var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
+}
+
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-secondary) var(--bg-tertiary);
+}
+
+/* Preserve status colors in both themes */
+.text-green-600, .bg-green-600, .border-green-600,
+.text-red-600, .bg-red-600, .border-red-600,
+.text-yellow-600, .bg-yellow-600, .border-yellow-600,
+.text-orange-600, .bg-orange-600, .border-orange-600 {
+    transition: none !important;
+}
+
+/* ============================================
+   SCROLL TO TOP BUTTON
+   ============================================ */
+
+.scroll-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #000000 0%, #1f2937 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+}
+
+.scroll-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.scroll-to-top:hover {
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+}
+
+.scroll-to-top:active {
+    transform: translateY(-2px) scale(1.05);
+}
+
+/* Dark mode scroll-to-top button */
+[data-theme="dark"] .scroll-to-top,
+.dark-mode .scroll-to-top {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    color: #0f172a;
+}
+
+[data-theme="dark"] .scroll-to-top:hover,
+.dark-mode .scroll-to-top:hover {
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+    .scroll-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+    }
+}
+
+/* Print: hide scroll button */
+@media print {
+    .scroll-to-top {
+        display: none !important;
+    }
+}
