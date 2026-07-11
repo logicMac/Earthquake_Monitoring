@@ -29,7 +29,7 @@ const char* ssid     = "mac";
 const char* password = "mac12345";
 
 // ── Server Configuration ──────────────────────────────────────────────────────
-const char* serverUrl = "https://eartquake-monitoring.kesug.com/receive_data.php";
+const char* serverUrl = "https://earthquake-monitoring.onrender.com/receive_data.php";
 
 // ── Hardware Pins ─────────────────────────────────────────────────────────────
 #define BUZZER_PIN 25

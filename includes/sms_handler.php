@@ -52,12 +52,18 @@ function sendBulkSMSAlert($conn, $log_id, $intensity, $mmi = null) {
         // Send SMS via UniSMS API
         $sms_result = sendSMS($phone, $message);
         
-        // Log SMS attempt
+        // Log SMS attempt with error details
         $status = $sms_result['success'] ? 'sent' : 'failed';
+        $error_message = $sms_result['success'] ? '' : ($sms_result['message'] ?? 'Unknown error');
         $log_stmt = $conn->prepare("INSERT INTO sms_logs (log_id, recipient_id, phone_number, message, status) VALUES (?, ?, ?, ?, ?)");
         $log_stmt->bind_param("iisss", $log_id, $recipient['id'], $phone, $message, $status);
         $log_stmt->execute();
         $log_stmt->close();
+        
+        // Log detailed error to server error log
+        if (!$sms_result['success']) {
+            error_log("SMS Failed - Phone: $phone, Error: $error_message, HTTP Code: " . ($sms_result['http_code'] ?? 'N/A'));
+        }
         
         if ($sms_result['success']) {
             $success_count++;

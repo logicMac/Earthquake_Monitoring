@@ -84,9 +84,7 @@ function getEarthquakeContext($conn) {
     $result = $conn->query("
         SELECT 
             MAX(intensity) as max_intensity,
-            MAX(magnitude) as max_magnitude,
             AVG(intensity) as avg_intensity,
-            AVG(magnitude) as avg_magnitude,
             COUNT(CASE WHEN alert_sent = 1 THEN 1 END) as sms_sent,
             COUNT(CASE WHEN intensity >= 176 THEN 1 END) as emergency_events
         FROM seismic_logs
@@ -105,21 +103,9 @@ function buildSystemPrompt($context) {
     $latestEvent = $context['latest_event'];
     $stats = $context['stats'];
     
-    $latestMagnitude = $latestEvent && isset($latestEvent['magnitude']) ? 
-        "M" . number_format($latestEvent['magnitude'], 1) : 
-        "N/A";
-    
     $latestInfo = $latestEvent ? 
-        "Latest: {$latestMagnitude}, {$latestEvent['intensity']} Gal (MMI {$latestEvent['mmi_level']}) at {$latestEvent['timestamp']}" :
+        "Latest: {$latestEvent['intensity']} Gal (MMI {$latestEvent['mmi_level']}) at {$latestEvent['timestamp']}" :
         "No events recorded yet";
-    
-    $maxMagnitude = isset($stats['max_magnitude']) && $stats['max_magnitude'] ? 
-        number_format($stats['max_magnitude'], 1) : 
-        'N/A';
-    
-    $avgMagnitude = isset($stats['avg_magnitude']) && $stats['avg_magnitude'] ? 
-        number_format($stats['avg_magnitude'], 1) : 
-        'N/A';
     
     return "You are QuakeBot, a friendly AI assistant for the ND-SCPM Earthquake Monitoring System. 
 You help users understand seismic data, answer questions about earthquakes, and provide insights.
@@ -128,8 +114,6 @@ CURRENT SYSTEM DATA:
 - Total Events Recorded: {$context['total_events']}
 - {$latestInfo}
 - High Intensity Events (≥80 Gal): {$context['high_intensity_count']}
-- Maximum Magnitude: {$maxMagnitude} (estimated)
-- Average Magnitude: {$avgMagnitude} (estimated)
 - Maximum Intensity: " . ($stats['max_intensity'] ?? 'N/A') . " Gal
 - Average Intensity: " . (isset($stats['avg_intensity']) ? round($stats['avg_intensity'], 2) : 'N/A') . " Gal
 - SMS Alerts Sent: " . ($stats['sms_sent'] ?? 0) . "
@@ -139,50 +123,21 @@ RECENT EVENTS (Last 10):
 " . formatRecentEvents($context['recent_events']) . "
 
 KNOWLEDGE BASE:
-
-**Magnitude vs Intensity:**
-- Magnitude: Measures earthquake size at the source (e.g., M7.5). Our system ESTIMATES magnitude from local ground motion using formula M ≈ 2/3 × MMI + 1. This is an approximation - actual magnitude requires data from multiple seismic stations.
-- Intensity (Gal): Measures ground shaking strength at our location (Peak Ground Acceleration). 1 Gal = 1 cm/s².
-
-**MMI Scale (Modified Mercalli Intensity):**
-- I: Not felt
-- II-III: Weak (felt by few)
-- IV: Light (dishes disturbed)
-- V: Moderate (felt by all)
-- VI: Strong (furniture moved)
-- VII: Very Strong (building damage)
-- VIII: Severe (considerable damage)
-- IX: Violent (buildings collapse)
-- X+: Extreme (mass destruction)
-
-**Alert Thresholds:**
-- Level-1 (Monitor): 25-80 Gal - Local monitoring, no SMS
-- Level-2 (Alert): 80-176 Gal - High intensity, buzzer + LCD only
-- Level-3 (Emergency): ≥176 Gal - SMS alerts sent to all recipients
-
-**Conversion Reference:**
-- 25 Gal ≈ 2.6%g ≈ M4.3 ≈ MMI IV (Light)
-- 80 Gal ≈ 8.2%g ≈ M5.7 ≈ MMI V-VI (Moderate-Strong)
-- 176 Gal ≈ 18%g ≈ M7.5 ≈ MMI VII (Very Strong)
-
-**System Details:**
-- Hardware: ESP32 microcontroller + MPU6050 accelerometer
+- MMI Scale: I (not felt) to X+ (extreme destruction)
+- Gal Unit: 1 Gal = 1 cm/s² (acceleration)
+- Alert Levels:
+  * Level-1 (Monitor): 25-80 Gal - Local monitoring only
+  * Level-2 (Alert): 80-176 Gal - High intensity, local alert
+  * Level-3 (Emergency): ≥176 Gal - SMS alerts sent to all recipients
+- Hardware: ESP32 microcontroller + MPU6050 accelerometer sensor
 - Location: Notre Dame - Siena College of Polomolok
-- SMS Provider: UniSMS (₱0.38 per message)
-- Data Updates: Real-time (every 2 seconds)
-
-**Important Notes:**
-- Our magnitude estimates are approximate and best for nearby earthquakes
-- For official earthquake magnitude, refer to PHIVOLCS (Philippine Institute of Volcanology and Seismology)
-- We measure local ground shaking, not the earthquake's true size
 
 RESPONSE GUIDELINES:
 - Be friendly, helpful, and educational
 - Use simple language for non-technical users
-- Provide specific data when asked (include magnitude when relevant)
-- Explain the difference between magnitude and intensity if asked
-- Clarify that magnitude is estimated, not measured directly
-- Suggest checking PHIVOLCS for official magnitude data
+- Provide specific data when asked
+- Explain technical terms clearly
+- Suggest actions when appropriate
 - Keep responses concise (2-4 sentences unless detailed explanation needed)
 - Use emojis sparingly for friendliness 🌍⚡📊
 
@@ -199,10 +154,7 @@ function formatRecentEvents($events) {
     
     $formatted = [];
     foreach ($events as $event) {
-        $magnitude = isset($event['magnitude']) && $event['magnitude'] ? 
-            "M" . number_format($event['magnitude'], 1) : 
-            "M?";
-        $formatted[] = "- {$event['timestamp']}: {$magnitude}, {$event['intensity']} Gal (MMI {$event['mmi_level']}) - Alert: " . 
+        $formatted[] = "- {$event['timestamp']}: {$event['intensity']} Gal (MMI {$event['mmi_level']}) - Alert: " . 
                       ($event['alert_sent'] ? 'Yes' : 'No');
     }
     
@@ -366,3 +318,5 @@ function callGroqAPI($systemPrompt, $userMessage) {
     ];
 }
 ?>
+
+why i get this error when i prompt in quakebot: ❌ Connection error. Please check your internet connection and try again.
