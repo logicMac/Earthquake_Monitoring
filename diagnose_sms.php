@@ -136,12 +136,15 @@ if (empty($apiKey) || $apiKey === 'YOUR_UNISMS_API_KEY') {
     $testPhone = '+639123456789'; // Test number (won't actually send)
     $testMessage = "Diagnostic test from ND-SCPM";
     
-    $senderId = defined('SMS_SENDER_ID') ? SMS_SENDER_ID : 'UnisoftDEV';
-    $data = json_encode([
+    $senderId = defined('SMS_SENDER_ID') ? SMS_SENDER_ID : '';
+    $data = [
         'recipient' => $testPhone,
-        'content' => $testMessage,
-        'sender_id' => $senderId
-    ]);
+        'content' => $testMessage
+    ];
+    if (!empty($senderId)) {
+        $data['sender_id'] = $senderId;
+    }
+    $data = json_encode($data);
     
     $ch = curl_init($apiUrl);
     curl_setopt_array($ch, [

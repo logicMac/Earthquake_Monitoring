@@ -35,11 +35,11 @@ function sendBulkSMSAlert($conn, $log_id, $intensity, $mmi = null) {
     $magnitude = IntensityCalculator::estimateMagnitude($intensity);
     $percent_g = IntensityCalculator::galToPercentG($intensity);
     
-    // Build alert message (max 160 chars per UniSMS API limit)
+    // Build alert message (simplified to avoid spam filter)
     $intensity_text = number_format($intensity, 1);
-    $datetime = date('M j, Y g:iA');
+    $datetime = date('M j g:iA');
     
-    $message = "EQ Alert ND-SCPM: Mag {$magnitude}, {$intensity_text} Gal, MMI {$mmi['level']}. {$datetime}. Move to open area.";
+    $message = "NDSCPM Alert: Mag {$magnitude}, {$intensity_text} Gal. {$datetime}. Move to open area.";
     
     $success_count = 0;
     
@@ -98,13 +98,17 @@ function sendSMS($phone, $message) {
     // Format phone number (ensure it starts with +63)
     $phone = formatPhoneNumber($phone);
     
-    // Prepare request data (UniSMS requires recipient, content, and sender_id)
-    $senderId = defined('SMS_SENDER_ID') ? SMS_SENDER_ID : 'UnisoftDEV';
-    $data = json_encode([
+    // Prepare request data (UniSMS requires recipient and content)
+    // sender_id is optional - only include if active
+    $senderId = defined('SMS_SENDER_ID') ? SMS_SENDER_ID : '';
+    $data = [
         'recipient' => $phone,
-        'content' => $message,
-        'sender_id' => $senderId
-    ]);
+        'content' => $message
+    ];
+    if (!empty($senderId)) {
+        $data['sender_id'] = $senderId;
+    }
+    $data = json_encode($data);
     
     // Initialize cURL
     $ch = curl_init($apiUrl);
@@ -234,11 +238,10 @@ function formatPhoneNumber($phone) {
 function testSMS($phone) {
     $intensity_gal = 176;
     $magnitude = IntensityCalculator::estimateMagnitude($intensity_gal);
-    $mmi = IntensityCalculator::getMMIScale($intensity_gal);
     $intensity_text = number_format($intensity_gal, 1);
-    $datetime = date('M j, Y g:iA');
+    $datetime = date('M j g:iA');
     
-    $message = "EQ Alert ND-SCPM: Mag {$magnitude}, {$intensity_text} Gal, MMI {$mmi['level']}. {$datetime}. Move to open area.";
+    $message = "NDSCPM Alert: Mag {$magnitude}, {$intensity_text} Gal. {$datetime}. Move to open area.";
     
     return sendSMS($phone, $message);
 }
