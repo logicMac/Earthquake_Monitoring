@@ -35,12 +35,11 @@ function sendBulkSMSAlert($conn, $log_id, $intensity, $mmi = null) {
     $magnitude = IntensityCalculator::estimateMagnitude($intensity);
     $percent_g = IntensityCalculator::galToPercentG($intensity);
     
-    // Build alert message with magnitude estimate
-    $intensity_text = number_format($intensity, 2);
-    $mmi_text = $mmi ? " Intensity: MMI {$mmi['level']} ({$mmi['name']})." : "";
-    $datetime = date('F j, Y \a\t g:i A');
+    // Build alert message (max 160 chars per UniSMS API limit)
+    $intensity_text = number_format($intensity, 1);
+    $datetime = date('M j, Y g:iA');
     
-    $message = "EARTHQUAKE ALERT from ND-SCPM. Magnitude {$magnitude}, ground motion {$intensity_text} Gal.{$mmi_text} Recorded {$datetime}. For safety, move to open area.";
+    $message = "EQ Alert ND-SCPM: Mag {$magnitude}, {$intensity_text} Gal, MMI {$mmi['level']}. {$datetime}. Move to open area.";
     
     $success_count = 0;
     
@@ -233,16 +232,13 @@ function formatPhoneNumber($phone) {
  * @return array Test result
  */
 function testSMS($phone) {
-    // Use the actual earthquake alert message format for realistic testing
-    $intensity_gal = 176; // Test with SMS threshold value
+    $intensity_gal = 176;
     $magnitude = IntensityCalculator::estimateMagnitude($intensity_gal);
     $mmi = IntensityCalculator::getMMIScale($intensity_gal);
-    $intensity_text = number_format($intensity_gal, 2);
-    $datetime = date('F j, Y \a\t g:i A');
+    $intensity_text = number_format($intensity_gal, 1);
+    $datetime = date('M j, Y g:iA');
     
-    $mmi_text = " Intensity: MMI {$mmi['level']} ({$mmi['name']}).";
-    
-    $message = "EARTHQUAKE ALERT from ND-SCPM. Magnitude {$magnitude}, ground motion {$intensity_text} Gal.{$mmi_text} Recorded {$datetime}. For safety, move to open area.";
+    $message = "EQ Alert ND-SCPM: Mag {$magnitude}, {$intensity_text} Gal, MMI {$mmi['level']}. {$datetime}. Move to open area.";
     
     return sendSMS($phone, $message);
 }
