@@ -64,7 +64,7 @@ function getDBConnection() {
 // Features: 99.9% delivery, all PH networks, no expiration
 define('SMS_API_URL', 'https://unismsapi.com/api/sms');
 define('SMS_API_KEY', getenv('SMS_API_KEY') ?: '');  // Set via environment variable
-define('SMS_SENDER_ID', getenv('SMS_SENDER_ID') ?: 'UnisoftDEV');  // Set via environment variable
+define('SMS_SENDER_ID', getenv('SMS_SENDER_ID') ?: '');  // Set via environment variable, empty if not set
 
 // Groq API Configuration - QuakeBot
 // Get your free API key from: https://console.groq.com/

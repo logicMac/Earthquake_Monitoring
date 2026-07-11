@@ -187,8 +187,48 @@ if (empty($apiKey) || $apiKey === 'YOUR_UNISMS_API_KEY') {
 }
 echo "<hr>";
 
-// ── 7. SMS Threshold Check ─────────────────────────────────────────────────
-echo "<h2>7. SMS Threshold Configuration</h2>";
+// ── 7. Send Test SMS ───────────────────────────────────────────────────────
+echo "<h2>7. Send Test SMS</h2>";
+echo "<p>Send a test SMS to your own number to verify the API is working.</p>";
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['test_phone'])) {
+    $testPhone = $_POST['test_phone'];
+    $testMessage = $_POST['test_message'] ?? "Test message from ND-SCPM Earthquake Monitoring System";
+    
+    require_once 'includes/sms_handler.php';
+    $result = sendSMS($testPhone, $testMessage);
+    
+    echo "<div style='padding:15px; border-radius:5px; margin:10px 0;'>";
+    if ($result['success']) {
+        echo "<div style='background:#e8f5e9; padding:15px; border-radius:5px; border-left:4px solid #4caf50;'>";
+        echo "<p class='success'>✅ SMS sent successfully to " . htmlspecialchars($testPhone) . "</p>";
+        echo "<p><strong>Response:</strong></p>";
+        echo "<pre>" . htmlspecialchars(json_encode($result['data'], JSON_PRETTY_PRINT)) . "</pre>";
+        echo "</div>";
+    } else {
+        echo "<div style='background:#ffebee; padding:15px; border-radius:5px; border-left:4px solid #f44336;'>";
+        echo "<p class='error'>❌ SMS failed: " . htmlspecialchars($result['message']) . "</p>";
+        echo "</div>";
+    }
+    echo "</div>";
+    echo "<hr>";
+}
+
+echo "<form method='POST' style='max-width:500px;'>";
+echo "<div style='margin-bottom:15px;'>";
+echo "<label style='display:block; font-weight:bold; margin-bottom:5px;'>Phone Number:</label>";
+echo "<input type='text' name='test_phone' placeholder='09123456789 or +639123456789' required style='width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;'>";
+echo "</div>";
+echo "<div style='margin-bottom:15px;'>";
+echo "<label style='display:block; font-weight:bold; margin-bottom:5px;'>Message:</label>";
+echo "<textarea name='test_message' rows='3' style='width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;'>Test message from ND-SCPM Earthquake Monitoring System</textarea>";
+echo "</div>";
+echo "<button type='submit' style='background:#4caf50; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-weight:bold;'>Send Test SMS</button>";
+echo "</form>";
+echo "<hr>";
+
+// ── 8. SMS Threshold Check ─────────────────────────────────────────────────
+echo "<h2>8. SMS Threshold Configuration</h2>";
 require_once 'includes/intensity_calculator.php';
 
 echo "<p><strong>Current SMS Threshold:</strong> MMI Level VII (Very Strong) or higher</p>";
