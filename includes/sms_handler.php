@@ -99,11 +99,11 @@ function sendSMS($phone, $message) {
     $phone = formatPhoneNumber($phone);
     
     // Prepare request data (UniSMS requires recipient, content, and sender_id)
-    // 'UniSMS' is the default sender ID for student/test accounts
+    $senderId = defined('SMS_SENDER_ID') ? SMS_SENDER_ID : 'UnisoftDEV';
     $data = json_encode([
         'recipient' => $phone,
         'content' => $message,
-        'sender_id' => 'UnisoftDEV'
+        'sender_id' => $senderId
     ]);
     
     // Initialize cURL
