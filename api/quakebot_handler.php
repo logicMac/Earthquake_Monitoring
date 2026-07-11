@@ -28,21 +28,29 @@ if (empty($userMessage)) {
 // Log for debugging (remove in production)
 error_log("QuakeBot: Received message: " . $userMessage);
 
-// Get earthquake data context
-$conn = getDBConnection();
-$context = getEarthquakeContext($conn);
-$conn->close();
+// Get earthquake data context — wrap in try-catch so handler always returns JSON
+try {
+    $conn = getDBConnection();
+    $context = getEarthquakeContext($conn);
+    $conn->close();
 
-// Build system prompt with context
-$systemPrompt = buildSystemPrompt($context);
+    // Build system prompt with context
+    $systemPrompt = buildSystemPrompt($context);
 
-// Call Groq API
-$response = callGroqAPI($systemPrompt, $userMessage);
+    // Call Groq API
+    $response = callGroqAPI($systemPrompt, $userMessage);
 
-// Log response for debugging
-error_log("QuakeBot: Response - " . json_encode($response));
+    // Log response for debugging
+    error_log("QuakeBot: Response - " . json_encode($response));
 
-echo json_encode($response);
+    echo json_encode($response);
+} catch (Throwable $e) {
+    error_log("QuakeBot Fatal: " . $e->getMessage() . " at " . $e->getFile() . ":" . $e->getLine());
+    echo json_encode([
+        'success' => false,
+        'message' => '⚠️ QuakeBot encountered a server error: ' . $e->getMessage()
+    ]);
+}
 
 /**
  * Get earthquake data context for AI
@@ -58,26 +66,28 @@ function getEarthquakeContext($conn) {
     
     // Total events
     $result = $conn->query("SELECT COUNT(*) as total FROM seismic_logs");
-    if ($row = $result->fetch_assoc()) {
+    if ($result && ($row = $result->fetch_assoc())) {
         $context['total_events'] = $row['total'];
     }
     
-    // Latest event
-    $result = $conn->query("SELECT * FROM seismic_logs ORDER BY timestamp DESC LIMIT 1");
-    if ($row = $result->fetch_assoc()) {
+    // Latest event — use created_at (not timestamp)
+    $result = $conn->query("SELECT * FROM seismic_logs ORDER BY created_at DESC LIMIT 1");
+    if ($result && ($row = $result->fetch_assoc())) {
         $context['latest_event'] = $row;
     }
     
     // High intensity count (>= 80 Gal)
     $result = $conn->query("SELECT COUNT(*) as count FROM seismic_logs WHERE intensity >= 80");
-    if ($row = $result->fetch_assoc()) {
+    if ($result && ($row = $result->fetch_assoc())) {
         $context['high_intensity_count'] = $row['count'];
     }
     
-    // Recent 10 events
-    $result = $conn->query("SELECT * FROM seismic_logs ORDER BY timestamp DESC LIMIT 10");
-    while ($row = $result->fetch_assoc()) {
-        $context['recent_events'][] = $row;
+    // Recent 10 events — use created_at (not timestamp)
+    $result = $conn->query("SELECT * FROM seismic_logs ORDER BY created_at DESC LIMIT 10");
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $context['recent_events'][] = $row;
+        }
     }
     
     // Statistics
@@ -89,7 +99,7 @@ function getEarthquakeContext($conn) {
             COUNT(CASE WHEN intensity >= 176 THEN 1 END) as emergency_events
         FROM seismic_logs
     ");
-    if ($row = $result->fetch_assoc()) {
+    if ($result && ($row = $result->fetch_assoc())) {
         $context['stats'] = $row;
     }
     
@@ -104,7 +114,7 @@ function buildSystemPrompt($context) {
     $stats = $context['stats'];
     
     $latestInfo = $latestEvent ? 
-        "Latest: {$latestEvent['intensity']} Gal (MMI {$latestEvent['mmi_level']}) at {$latestEvent['timestamp']}" :
+        "Latest: {$latestEvent['intensity']} Gal (MMI {$latestEvent['mmi_level']}) at {$latestEvent['created_at']}" :
         "No events recorded yet";
     
     return "You are QuakeBot, a friendly AI assistant for the ND-SCPM Earthquake Monitoring System. 
@@ -154,7 +164,7 @@ function formatRecentEvents($events) {
     
     $formatted = [];
     foreach ($events as $event) {
-        $formatted[] = "- {$event['timestamp']}: {$event['intensity']} Gal (MMI {$event['mmi_level']}) - Alert: " . 
+        $formatted[] = "- {$event['created_at']}: {$event['intensity']} Gal (MMI {$event['mmi_level']}) - Alert: " . 
                       ($event['alert_sent'] ? 'Yes' : 'No');
     }
     
@@ -318,5 +328,3 @@ function callGroqAPI($systemPrompt, $userMessage) {
     ];
 }
 ?>
-
-why i get this error when i prompt in quakebot: ❌ Connection error. Please check your internet connection and try again.
