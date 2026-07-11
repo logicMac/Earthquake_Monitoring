@@ -98,17 +98,13 @@ function sendSMS($phone, $message) {
     // Format phone number (ensure it starts with +63)
     $phone = formatPhoneNumber($phone);
     
-    // Prepare request data (UniSMS requires recipient and content)
-    // sender_id is optional - only include if active
-    $senderId = defined('SMS_SENDER_ID') ? SMS_SENDER_ID : '';
-    $data = [
+    // Prepare request data (UniSMS requires recipient, content, and sender_id)
+    $senderId = defined('SMS_SENDER_ID') ? SMS_SENDER_ID : 'Unisoft';
+    $data = json_encode([
         'recipient' => $phone,
-        'content' => $message
-    ];
-    if (!empty($senderId)) {
-        $data['sender_id'] = $senderId;
-    }
-    $data = json_encode($data);
+        'content' => $message,
+        'sender_id' => $senderId
+    ]);
     
     // Initialize cURL
     $ch = curl_init($apiUrl);
