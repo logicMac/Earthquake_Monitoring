@@ -106,7 +106,7 @@ echo "<hr>";
 
 // ── 5. Check Recent Seismic Events ────────────────────────────────────────────
 echo "<h2>5. Recent Seismic Events (Last 10)</h2>";
-$result = $conn->query("SELECT id, intensity, mmi_level, mmi_name, alert_sent, created_at FROM seismic_logs ORDER BY id DESC LIMIT 10");
+$result = $conn->query("SELECT id, intensity, mmi_level, mmi_name, alert_sent, timestamp FROM seismic_logs ORDER BY id DESC LIMIT 10");
 $events = $result->num_rows;
 
 if ($events == 0) {
@@ -121,7 +121,7 @@ if ($events == 0) {
         echo "<td>{$row['intensity']}</td>";
         echo "<td>{$row['mmi_level']} ({$row['mmi_name']})</td>";
         echo "<td class='$alertClass'>" . ($row['alert_sent'] ? 'Yes' : 'No') . "</td>";
-        echo "<td>{$row['created_at']}</td>";
+        echo "<td>{$row['timestamp']}</td>";
         echo "</tr>";
     }
     echo "</table>";

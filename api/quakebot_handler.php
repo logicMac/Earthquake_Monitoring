@@ -70,8 +70,8 @@ function getEarthquakeContext($conn) {
         $context['total_events'] = $row['total'];
     }
     
-    // Latest event — use created_at (not timestamp)
-    $result = $conn->query("SELECT * FROM seismic_logs ORDER BY created_at DESC LIMIT 1");
+    // Latest event
+    $result = $conn->query("SELECT * FROM seismic_logs ORDER BY timestamp DESC LIMIT 1");
     if ($result && ($row = $result->fetch_assoc())) {
         $context['latest_event'] = $row;
     }
@@ -82,8 +82,8 @@ function getEarthquakeContext($conn) {
         $context['high_intensity_count'] = $row['count'];
     }
     
-    // Recent 10 events — use created_at (not timestamp)
-    $result = $conn->query("SELECT * FROM seismic_logs ORDER BY created_at DESC LIMIT 10");
+    // Recent 10 events
+    $result = $conn->query("SELECT * FROM seismic_logs ORDER BY timestamp DESC LIMIT 10");
     if ($result) {
         while ($row = $result->fetch_assoc()) {
             $context['recent_events'][] = $row;
@@ -114,7 +114,7 @@ function buildSystemPrompt($context) {
     $stats = $context['stats'];
     
     $latestInfo = $latestEvent ? 
-        "Latest: {$latestEvent['intensity']} Gal (MMI {$latestEvent['mmi_level']}) at {$latestEvent['created_at']}" :
+        "Latest: {$latestEvent['intensity']} Gal (MMI {$latestEvent['mmi_level']}) at {$latestEvent['timestamp']}" :
         "No events recorded yet";
     
     return "You are QuakeBot, a friendly AI assistant for the ND-SCPM Earthquake Monitoring System. 
@@ -164,7 +164,7 @@ function formatRecentEvents($events) {
     
     $formatted = [];
     foreach ($events as $event) {
-        $formatted[] = "- {$event['created_at']}: {$event['intensity']} Gal (MMI {$event['mmi_level']}) - Alert: " . 
+        $formatted[] = "- {$event['timestamp']}: {$event['intensity']} Gal (MMI {$event['mmi_level']}) - Alert: " . 
                       ($event['alert_sent'] ? 'Yes' : 'No');
     }
     
