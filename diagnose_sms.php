@@ -139,7 +139,7 @@ if (empty($apiKey) || $apiKey === 'YOUR_UNISMS_API_KEY') {
     $data = json_encode([
         'recipient' => $testPhone,
         'content' => $testMessage,
-        'sender_name' => 'NDSCPM'
+        'sender_id' => 'UnisoftDEV'
     ]);
     
     $ch = curl_init($apiUrl);

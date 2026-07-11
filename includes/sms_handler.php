@@ -40,9 +40,7 @@ function sendBulkSMSAlert($conn, $log_id, $intensity, $mmi = null) {
     $mmi_text = $mmi ? " Intensity: MMI {$mmi['level']} ({$mmi['name']})." : "";
     $datetime = date('F j, Y \a\t g:i A');
     
-    $message = "ND-SCPM Earthquake Alert: Est. magnitude {$magnitude} detected. Ground motion: {$intensity_text} Gal.{$mmi_text} "
-             . "Recorded on {$datetime}. "
-             . "Drop, cover, and hold on. Move to open area if safe.";
+    $message = "EARTHQUAKE ALERT from ND-SCPM. Magnitude {$magnitude}, ground motion {$intensity_text} Gal.{$mmi_text} Recorded {$datetime}. For safety, move to open area.";
     
     $success_count = 0;
     
@@ -101,12 +99,12 @@ function sendSMS($phone, $message) {
     // Format phone number (ensure it starts with +63)
     $phone = formatPhoneNumber($phone);
     
-    // Prepare request data (UniSMS expects 'recipient' and 'content')
-    // Add 'sender_name' to customize the SMS header
+    // Prepare request data (UniSMS requires recipient, content, and sender_id)
+    // 'UniSMS' is the default sender ID for student/test accounts
     $data = json_encode([
         'recipient' => $phone,
         'content' => $message,
-        'sender_name' => 'NDSCPM'  // Custom sender name (11 chars max, alphanumeric)
+        'sender_id' => 'UnisoftDEV'
     ]);
     
     // Initialize cURL
@@ -244,9 +242,7 @@ function testSMS($phone) {
     
     $mmi_text = " Intensity: MMI {$mmi['level']} ({$mmi['name']}).";
     
-    $message = "ND-SCPM Earthquake Alert: Est. magnitude {$magnitude} detected. Ground motion: {$intensity_text} Gal.{$mmi_text} "
-             . "Recorded on {$datetime}. "
-             . "Drop, cover, and hold on. Move to open area if safe.";
+    $message = "EARTHQUAKE ALERT from ND-SCPM. Magnitude {$magnitude}, ground motion {$intensity_text} Gal.{$mmi_text} Recorded {$datetime}. For safety, move to open area.";
     
     return sendSMS($phone, $message);
 }
