@@ -64,8 +64,102 @@ $sms_count = $conn->query("SELECT COUNT(*) as count FROM sms_logs WHERE DATE(sen
         #mobileMenu { display: none; }
         #mobileMenu.show { display: block; }
         @media print {
-            .no-print { display: none; }
-            body { background: white; color: black; }
+            @page {
+                size: Letter portrait;
+                margin: 0.5in 0.5in 0.75in 0.5in;
+            }
+            /* Reset everything for print */
+            * {
+                box-shadow: none !important;
+                text-shadow: none !important;
+                animation: none !important;
+                transition: none !important;
+            }
+            body {
+                background: white !important;
+                color: #000 !important;
+                font-size: 9pt;
+                line-height: 1.3;
+            }
+            /* Hide navigation, filters, and interactive elements */
+            .no-print { display: none !important; }
+            nav { display: none !important; }
+
+            /* Remove the outer padding from the full-width container */
+            .w-full.mx-auto {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
+
+            /* Report Header - compact for print */
+            .print-header { text-align: center; margin-bottom: 12px; }
+            .print-header h1 { font-size: 14pt; font-weight: bold; margin: 0 0 2px 0; }
+            .print-header p { font-size: 9pt; margin: 0; color: #333; }
+
+            /* Hide the on-screen stat cards (they don't print well) */
+            .print-hide { display: none !important; }
+
+            /* Print-only summary table */
+            .print-summary { display: block !important; width: 100%; margin-bottom: 12px; }
+            .print-summary table { width: 100%; border-collapse: collapse; }
+            .print-summary td { border: 1px solid #000; padding: 3px 6px; font-size: 9pt; }
+            .print-summary td.label { font-weight: bold; background: #eee; width: 25%; }
+
+            /* Events table - proper print formatting */
+            .print-table { display: block !important; }
+            .print-table h2 { font-size: 11pt; font-weight: bold; margin: 0 0 6px 0; }
+            .print-table .overflow-x-auto { overflow: visible !important; margin: 0 !important; }
+            .print-table table {
+                width: 100% !important;
+                min-width: 0 !important;
+                border-collapse: collapse !important;
+                font-size: 8pt !important;
+            }
+            .print-table thead tr {
+                border: none !important;
+                background: #333 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .print-table th {
+                color: #fff !important;
+                background: #333 !important;
+                border: 1px solid #000 !important;
+                padding: 3px 4px !important;
+                font-size: 8pt !important;
+                text-transform: uppercase !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .print-table td {
+                border: 1px solid #000 !important;
+                padding: 2px 4px !important;
+                color: #000 !important;
+                font-size: 8pt !important;
+            }
+            /* Force hidden columns to show in print */
+            .print-table .hidden,
+            .print-table .hidden.md\:table-cell,
+            .print-table .hidden.lg\:table-cell {
+                display: table-cell !important;
+            }
+            /* Remove colored badge styling in print */
+            .print-table span.inline-flex {
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+                color: #000 !important;
+            }
+
+            /* Footer */
+            .print-footer { text-align: center; margin-top: 16px; font-size: 8pt; color: #555; }
+        }
+        /* Print-only elements hidden on screen */
+        .print-summary, .print-table { display: none; }
+        @media print {
+            .print-summary, .print-table { display: block; }
+            .screen-only { display: none !important; }
         }
     </style>
     <script>
@@ -223,15 +317,40 @@ $sms_count = $conn->query("SELECT COUNT(*) as count FROM sms_logs WHERE DATE(sen
             </form>
         </div>
 
-        <!-- Report Header -->
-        <div class="text-center mb-8 animate-fade-in delay-200">
+        <!-- Report Header (screen) -->
+        <div class="text-center mb-8 animate-fade-in delay-200 screen-only">
             <h1 class="text-3xl font-bold theme-text-primary mb-2">Earthquake Monitoring Report</h1>
             <p class="theme-text-secondary">Period: <?php echo date('F d, Y', strtotime($date_from)); ?> - <?php echo date('F d, Y', strtotime($date_to)); ?></p>
             <p class="theme-text-tertiary text-sm">Generated on: <?php echo date('F d, Y h:i A'); ?></p>
         </div>
 
-        <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 mb-8">
+        <!-- Print-only Header -->
+        <div class="print-header" style="display:none;">
+            <h1>Notre Dame - Siena College of Polomolok</h1>
+            <p>Earthquake Monitoring System - Seismic Events Report</p>
+            <p>Period: <?php echo date('F d, Y', strtotime($date_from)); ?> - <?php echo date('F d, Y', strtotime($date_to)); ?> | Generated: <?php echo date('F d, Y h:i A'); ?></p>
+        </div>
+
+        <!-- Print-only Summary Table -->
+        <div class="print-summary" style="display:none;">
+            <table>
+                <tr>
+                    <td class="label">Total Events</td><td><?php echo $stats['total_events']; ?></td>
+                    <td class="label">Max Magnitude</td><td><?php echo $stats['max_magnitude'] ? number_format($stats['max_magnitude'], 1) : 'N/A'; ?></td>
+                </tr>
+                <tr>
+                    <td class="label">Max Intensity</td><td><?php echo number_format($stats['max_intensity'], 2); ?> Gal</td>
+                    <td class="label">Avg Magnitude</td><td><?php echo $stats['avg_magnitude'] ? number_format($stats['avg_magnitude'], 1) : 'N/A'; ?></td>
+                </tr>
+                <tr>
+                    <td class="label">High Intensity (&ge;80 Gal)</td><td><?php echo $stats['high_intensity_events']; ?></td>
+                    <td class="label">SMS Sent</td><td><?php echo $sms_count; ?></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Statistics Cards (screen only) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 mb-8 screen-only">
             <div class="theme-card rounded-xl p-4 sm:p-6 card-shadow card-hover animate-scale-in delay-300 border-l-4 border-gray-900">
                 <div class="flex items-center justify-between mb-2">
                     <p class="theme-text-tertiary text-sm font-medium">Total Events</p>
@@ -293,8 +412,8 @@ $sms_count = $conn->query("SELECT COUNT(*) as count FROM sms_logs WHERE DATE(sen
             </div>
         </div>
 
-        <!-- Events Table -->
-        <div class="theme-card rounded-xl p-4 sm:p-6 card-shadow card-hover mb-6 sm:mb-8 animate-fade-in delay-600">
+        <!-- Events Table (screen) -->
+        <div class="theme-card rounded-xl p-4 sm:p-6 card-shadow card-hover mb-6 sm:mb-8 animate-fade-in delay-600 screen-only">
             <h2 class="text-lg sm:text-xl font-bold theme-text-primary mb-4 sm:mb-6">Seismic Events</h2>
             <div class="overflow-x-auto -mx-4 sm:mx-0">
                 <table class="w-full min-w-full">
@@ -363,10 +482,61 @@ $sms_count = $conn->query("SELECT COUNT(*) as count FROM sms_logs WHERE DATE(sen
             </div>
         </div>
 
-        <!-- Footer -->
-        <div class="text-center theme-text-tertiary text-sm">
+        <!-- Print-only Events Table -->
+        <div class="print-table" style="display:none;">
+            <h2>Seismic Events</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Timestamp</th>
+                        <th>Device</th>
+                        <th>Magnitude</th>
+                        <th>Intensity (Gal)</th>
+                        <th>MMI</th>
+                        <th>Alert</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    // Re-query for print table since the screen loop already consumed the result
+                    $print_stmt = $conn->prepare($events_query);
+                    $print_stmt->bind_param("ssd", $date_from, $date_to, $min_intensity);
+                    $print_stmt->execute();
+                    $print_events = $print_stmt->get_result();
+                    ?>
+                    <?php if ($print_events->num_rows > 0): ?>
+                        <?php while ($event = $print_events->fetch_assoc()): ?>
+                        <tr>
+                            <td>#<?php echo $event['id']; ?></td>
+                            <td><?php echo date('M d, Y h:i A', strtotime($event['timestamp'])); ?></td>
+                            <td><?php echo $event['device_id']; ?></td>
+                            <td><?php echo $event['magnitude'] ? number_format($event['magnitude'], 1) : 'N/A'; ?></td>
+                            <td><?php echo number_format($event['intensity'], 2); ?></td>
+                            <td><?php echo $event['mmi_level'] ?? 'N/A'; ?></td>
+                            <td><?php echo $event['alert_sent'] ? 'Yes' : 'No'; ?></td>
+                        </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="7" style="text-align:center;">No events found for the selected period</td>
+                        </tr>
+                    <?php endif; ?>
+                    <?php $print_stmt->close(); ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer (screen) -->
+        <div class="text-center theme-text-tertiary text-sm screen-only">
             <p>Notre Dame - Siena College of Polomolok</p>
             <p>Earthquake Monitoring System</p>
+        </div>
+
+        <!-- Print-only Footer -->
+        <div class="print-footer" style="display:none;">
+            <p>Notre Dame - Siena College of Polomolok | Earthquake Monitoring System</p>
+            <p>This report was generated automatically by the ND-SCPM Earthquake Monitoring System.</p>
         </div>
     </div>
 </body>
