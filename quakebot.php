@@ -2,6 +2,7 @@
 require_once 'config/database.php';
 require_once 'includes/auth.php';
 requireLogin();
+$activePage = 'quakebot';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -119,110 +120,9 @@ requireLogin();
     </style>
 </head>
 <body>
-    <nav class="shadow-sm animate-fade-in-down">
-        <div class="w-full mx-auto px-4 sm:px-6 py-3 sm:py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2 sm:space-x-4">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 logo-icon rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
-                        <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 class="nav-title text-base sm:text-xl font-bold">ND-SCPM</h1>
-                        <p class="nav-subtitle text-xs hidden sm:block">QuakeBot Assistant</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <button onclick="toggleTheme()" class="theme-toggle hidden sm:flex" title="Toggle Dark/Light Mode">
-                        <svg id="sunIcon" class="hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                        </svg>
-                        <svg id="moonIcon" class="" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                        </svg>
-                    </button>
-                    <div class="hidden md:flex items-center space-x-2 sm:space-x-4">
-                        <span class="theme-text-tertiary text-sm">Welcome, <span class="theme-text-primary font-medium"><?php echo getAdminName(); ?></span></span>
-                        <a href="index.php" class="theme-btn-secondary px-4 py-2 rounded-lg font-medium text-sm transition button-hover">
-                            Dashboard
-                        </a>
-                        <a href="reports.php" class="theme-btn-secondary px-4 py-2 rounded-lg font-medium text-sm transition button-hover">
-                            Reports
-                        </a>
-                        <a href="manage_recipients.php" class="theme-btn-secondary px-4 py-2 rounded-lg font-medium text-sm transition button-hover">
-                            Recipients
-                        </a>
-                        <a href="logout.php" class="theme-btn-primary px-4 py-2 rounded-lg font-semibold text-sm transition button-hover">
-                            Logout
-                        </a>
-                    </div>
-                    <button onclick="toggleMobileMenu()" class="md:hidden theme-btn-secondary p-2 rounded-lg transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div id="mobileMenu" class="md:hidden mt-3 pt-3" style="border-top: 2px solid var(--border-primary);">
-                <div class="flex flex-col space-y-2">
-                    <button onclick="toggleTheme()" class="theme-btn-secondary px-4 py-2 rounded-lg font-medium text-sm transition text-center flex items-center justify-center space-x-2">
-                        <svg id="sunIconMobile" class="hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                        </svg>
-                        <svg id="moonIconMobile" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                        </svg>
-                        <span>Toggle Theme</span>
-                    </button>
-                    <span class="theme-text-tertiary text-sm px-4 py-2">Welcome, <span class="theme-text-primary font-medium"><?php echo getAdminName(); ?></span></span>
-                    <a href="index.php" class="theme-btn-secondary px-4 py-2 rounded-lg font-medium text-sm transition text-center">
-                        Dashboard
-                    </a>
-                    <a href="reports.php" class="theme-btn-secondary px-4 py-2 rounded-lg font-medium text-sm transition text-center">
-                        Reports
-                    </a>
-                    <a href="manage_recipients.php" class="theme-btn-secondary px-4 py-2 rounded-lg font-medium text-sm transition text-center">
-                        Recipients
-                    </a>
-                    <a href="logout.php" class="theme-btn-primary px-4 py-2 rounded-lg font-semibold text-sm transition text-center">
-                        Logout
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <?php include 'includes/sidebar.php'; ?>
 
-    <script>
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobileMenu');
-            menu.classList.toggle('show');
-        }
-        
-        function updateToggleIcon() {
-            const theme = document.documentElement.getAttribute('data-theme');
-            const sunIcon = document.getElementById('sunIcon');
-            const moonIcon = document.getElementById('moonIcon');
-            const sunIconMobile = document.getElementById('sunIconMobile');
-            const moonIconMobile = document.getElementById('moonIconMobile');
-            
-            if (theme === 'dark') {
-                if (sunIcon) sunIcon.classList.remove('hidden');
-                if (moonIcon) moonIcon.classList.add('hidden');
-                if (sunIconMobile) sunIconMobile.classList.remove('hidden');
-                if (moonIconMobile) moonIconMobile.classList.add('hidden');
-            } else {
-                if (sunIcon) sunIcon.classList.add('hidden');
-                if (moonIcon) moonIcon.classList.remove('hidden');
-                if (sunIconMobile) sunIconMobile.classList.add('hidden');
-                if (moonIconMobile) moonIconMobile.classList.remove('hidden');
-            }
-        }
-        
-        document.addEventListener('DOMContentLoaded', updateToggleIcon);
-    </script>
-
-    <div class="w-full mx-auto px-4 sm:px-6 py-4 sm:py-8">
+    <div class="sidebar-content px-4 sm:px-6 py-4 sm:py-8">
         <!-- QuakeBot Header -->
         <div class="theme-card rounded-xl p-6 mb-6 animate-scale-in">
             <div class="flex items-center space-x-4">
