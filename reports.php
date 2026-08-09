@@ -68,6 +68,22 @@ $sms_count = $conn->query("SELECT COUNT(*) as count FROM sms_logs WHERE DATE(sen
             body { background: white; color: black; }
         }
     </style>
+    <script>
+        function downloadReport() {
+            const form = document.querySelector('form');
+            const dateFrom = form.querySelector('[name="date_from"]').value;
+            const dateTo = form.querySelector('[name="date_to"]').value;
+            const minIntensity = form.querySelector('[name="min_intensity"]').value;
+            const params = new URLSearchParams({
+                date_from: dateFrom,
+                date_to: dateTo,
+                min_intensity: minIntensity
+            });
+            // export_report.php sends Content-Disposition: attachment, so the
+            // browser downloads the file without leaving the current page.
+            window.location.href = 'export_report.php?' + params.toString();
+        }
+    </script>
 </head>
 <body>
     <!-- Navigation -->
@@ -197,16 +213,12 @@ $sms_count = $conn->query("SELECT COUNT(*) as count FROM sms_logs WHERE DATE(sen
                         class="theme-input w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
                 </div>
                 <div class="flex items-end space-x-2 sm:col-span-2 lg:col-span-1">
-                    <button type="submit" class="flex-1 theme-btn-primary px-3 sm:px-4 py-2 rounded-lg font-semibold transition text-sm">
+                    <button type="button" onclick="downloadReport()" class="flex-1 theme-btn-primary px-3 sm:px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Generate
                     </button>
                     <button type="button" onclick="window.print()" class="flex-1 bg-gray-700 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold hover:bg-gray-800 transition text-sm">
                         Print
                     </button>
-                    <a href="export_report.php?date_from=<?php echo $date_from; ?>&date_to=<?php echo $date_to; ?>&min_intensity=<?php echo $min_intensity; ?>" 
-                        class="flex-1 bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition text-center text-sm">
-                        CSV
-                    </a>
                 </div>
             </form>
         </div>
