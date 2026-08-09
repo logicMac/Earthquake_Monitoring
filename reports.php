@@ -88,7 +88,7 @@ $sms_count = $conn->query("SELECT COUNT(*) as count FROM sms_logs WHERE DATE(sen
 <body>
     <!-- Navigation -->
     <nav class="shadow-sm no-print animate-fade-in-down">
-        <div class="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
+        <div class="w-full mx-auto px-4 sm:px-6 py-3 sm:py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2 sm:space-x-4">
                     <div class="w-10 h-10 sm:w-12 sm:h-12 logo-icon rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
@@ -192,7 +192,7 @@ $sms_count = $conn->query("SELECT COUNT(*) as count FROM sms_logs WHERE DATE(sen
         document.addEventListener('DOMContentLoaded', updateToggleIcon);
     </script>
 
-    <div class="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
+    <div class="w-full mx-auto px-4 sm:px-6 py-4 sm:py-8">
         <!-- Filters -->
         <div class="theme-card rounded-xl p-4 sm:p-6 card-shadow card-hover mb-6 sm:mb-8 no-print animate-scale-in delay-100">
             <h2 class="text-lg sm:text-xl font-bold theme-text-primary mb-4">Filter Report</h2>

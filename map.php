@@ -5,6 +5,7 @@
  */
 require_once 'config/database.php';
 require_once 'includes/intensity_calculator.php';
+require_once 'includes/auth.php';
 
 // Sensor / campus location (single ESP32 device)
 $sensorLat = 6.224291605598504;
@@ -78,7 +79,7 @@ $sensorLngJson = json_encode($sensorLng);
 <body class="min-h-screen theme-bg-primary">
     <!-- Header -->
     <nav class="shadow-sm no-print animate-fade-in-down">
-        <div class="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
+        <div class="w-full mx-auto px-4 sm:px-6 py-3 sm:py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2 sm:space-x-4">
                     <div class="w-10 h-10 sm:w-12 sm:h-12 logo-icon rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
@@ -92,9 +93,14 @@ $sensorLngJson = json_encode($sensorLng);
                     </div>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <a href="login.php" class="theme-btn-primary px-4 py-2 rounded-lg font-semibold text-sm transition">
-                        Login
-                    </a>
+                    <?php if (isLoggedIn()): ?>
+                        <a href="index.php" class="theme-btn-secondary px-4 py-2 rounded-lg font-medium text-sm transition">Dashboard</a>
+                        <a href="logout.php" class="theme-btn-primary px-4 py-2 rounded-lg font-semibold text-sm transition">Logout</a>
+                    <?php else: ?>
+                        <a href="login.php" class="theme-btn-primary px-4 py-2 rounded-lg font-semibold text-sm transition">
+                            Login
+                        </a>
+                    <?php endif; ?>
                     <button onclick="toggleTheme()" class="theme-toggle" title="Toggle Dark/Light Mode">
                         <svg id="sunIcon" class="hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
@@ -109,7 +115,7 @@ $sensorLngJson = json_encode($sensorLng);
     </nav>
 
     <!-- Map container -->
-    <main class="container mx-auto px-4 sm:px-6 py-4">
+    <main class="w-full mx-auto px-4 sm:px-6 py-4">
         <div class="flex items-center justify-between mb-3">
             <div>
                 <h2 class="text-xl sm:text-2xl font-bold theme-text-primary">Seismic Events Map</h2>

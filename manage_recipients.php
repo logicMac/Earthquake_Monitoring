@@ -69,7 +69,7 @@ $recipients = $conn->query("SELECT * FROM alert_recipients ORDER BY category, na
 <body>
     <!-- Navigation -->
     <nav class="shadow-sm animate-fade-in-down">
-        <div class="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
+        <div class="w-full mx-auto px-4 sm:px-6 py-3 sm:py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2 sm:space-x-4">
                     <div class="w-10 h-10 sm:w-12 sm:h-12 logo-icon rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
@@ -173,7 +173,7 @@ $recipients = $conn->query("SELECT * FROM alert_recipients ORDER BY category, na
         document.addEventListener('DOMContentLoaded', updateToggleIcon);
     </script>
 
-    <div class="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
+    <div class="w-full mx-auto px-4 sm:px-6 py-4 sm:py-8">
 
         <?php if ($message): ?>
         <div class="bg-green-50 border-l-4 border-green-500 p-3 sm:p-4 mb-4 sm:mb-6 rounded-r-lg card-shadow">
