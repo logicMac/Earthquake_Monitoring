@@ -137,10 +137,26 @@ $sensorLngJson = json_encode($sensorLng);
             return '#22c55e'; // green - minor
         }
 
-        // Marker radius by magnitude (min 8, scale up)
-        function magnitudeRadius(mag) {
-            if (mag === null || mag === undefined) return 8;
-            return Math.max(8, Math.min(40, mag * 4));
+        // Pin icon size by magnitude
+        function pinSize(mag) {
+            if (mag === null || mag === undefined) return 20;
+            return Math.max(20, Math.min(44, 16 + mag * 4));
+        }
+
+        // Create a location-pin (SVG) divIcon for an event
+        function makePinIcon(color, size) {
+            const half = size / 2;
+            const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="' + color + '" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 2px 3px rgba(0,0,0,0.35));">' +
+                '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>' +
+                '<circle cx="12" cy="10" r="3" fill="white" stroke="' + color + '" stroke-width="1.5"/>' +
+                '</svg>';
+            return L.divIcon({
+                html: svg,
+                iconSize: [size, size],
+                iconAnchor: [half, size],
+                popupAnchor: [0, -size + 2],
+                className: ''
+            });
         }
 
         // MMI color fallback (matches intensity_calculator.php)
@@ -155,50 +171,51 @@ $sensorLngJson = json_encode($sensorLng);
             'darkred':'#7f1d1d'
         };
 
-        const map = L.map('map', { zoomControl: true }).setView([SENSOR_LAT, SENSOR_LNG], 14);
+        // Center tightly on the school; default zoom is street/building level
+        const map = L.map('map', { zoomControl: true }).setView([SENSOR_LAT, SENSOR_LNG], 18);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap contributors'
+        // Esri World Imagery (satellite)
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 20,
+            attribution: 'Tiles &copy; Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
         }).addTo(map);
 
-        // Sensor marker (the campus device)
-        const sensorIcon = L.divIcon({
-            html: '<div style="font-size:28px;">📡</div>',
-            iconSize: [32, 32],
-            iconAnchor: [16, 16],
+        // Sensor marker (the campus device) - location pin with label
+        const sensorPin = L.divIcon({
+            html: '<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="#2563eb" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 2px 3px rgba(0,0,0,0.35));">' +
+                '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>' +
+                '<circle cx="12" cy="10" r="3" fill="white" stroke="#2563eb" stroke-width="1.5"/>' +
+                '</svg>' +
+                '<div style="margin-top:-2px;text-align:center;font-size:10px;font-weight:700;color:#1e3a8a;background:rgba(255,255,255,0.85);border-radius:4px;padding:1px 4px;display:inline-block;box-shadow:0 1px 2px rgba(0,0,0,0.2);">ND-SCPM</div>',
+            iconSize: [34, 44],
+            iconAnchor: [17, 40],
+            popupAnchor: [0, -36],
             className: ''
         });
-        L.marker([SENSOR_LAT, SENSOR_LNG], { icon: sensorIcon })
+        L.marker([SENSOR_LAT, SENSOR_LNG], { icon: sensorPin, zIndexOffset: 1000 })
             .addTo(map)
-            .bindPopup('<b>Campus Sensor</b><br>ESP32 + MPU6050<br><span class="text-xs">All events recorded here</span>');
+            .bindPopup('<b>Notre Dame - Siena College of Polomolok</b><br>Campus Sensor: ESP32 + MPU6050<br><span class="text-xs">All events recorded here</span>');
 
         // Plot each event. Since all events come from the same device,
-        // apply a small deterministic jitter based on the event id so markers
-        // spread out around the sensor instead of perfectly overlapping.
+        // apply a tiny deterministic jitter based on the event id so markers
+        // are spread only within the school scope instead of spilling into town.
         const markers = [];
         EVENTS.forEach(function(ev) {
             const id = parseInt(ev.id, 10) || 0;
-            // Deterministic jitter within ~0.003 degrees (~300m)
+            // Deterministic jitter within ~0.0004 degrees (~40-50m) - school scope only
             const seed = (id * 9301 + 49297) % 233280;
-            const jitterLat = ((seed % 1000) / 1000 - 0.5) * 0.006;
-            const jitterLng = (((seed * 7) % 1000) / 1000 - 0.5) * 0.006;
+            const jitterLat = ((seed % 1000) / 1000 - 0.5) * 0.0008;
+            const jitterLng = (((seed * 7) % 1000) / 1000 - 0.5) * 0.0008;
             const lat = SENSOR_LAT + jitterLat;
             const lng = SENSOR_LNG + jitterLng;
 
             const mag = ev.magnitude !== null && ev.magnitude !== undefined ? parseFloat(ev.magnitude) : null;
             const color = magnitudeColor(mag);
-            const radius = magnitudeRadius(mag);
+            const size = pinSize(mag);
 
             const mmiColor = MMI_COLORS[ev.mmi_color] || '#9ca3af';
 
-            const marker = L.circleMarker([lat, lng], {
-                radius: radius,
-                color: color,
-                fillColor: color,
-                fillOpacity: 0.6,
-                weight: 2
-            }).addTo(map);
+            const marker = L.marker([lat, lng], { icon: makePinIcon(color, size) }).addTo(map);
 
             const magText = mag !== null ? mag.toFixed(1) : 'N/A';
             const ts = ev.timestamp || 'Unknown time';
@@ -216,7 +233,7 @@ $sensorLngJson = json_encode($sensorLng);
                 '<tr><td style="padding:2px 0;">Device</td><td style="text-align:right;font-family:monospace;font-size:11px;">' + ev.device_id + '</td></tr>' +
                 '<tr><td style="padding:2px 0;">Alert Sent</td><td style="text-align:right;">' + alertText + '</td></tr>' +
                 '</table>' +
-                '<div style="font-size:10px;color:#94a3b8;margin-top:6px;font-style:italic;">Plotted near sensor (single device)</div>' +
+                '<div style="font-size:10px;color:#94a3b8;margin-top:6px;font-style:italic;">Plotted within campus (single device)</div>' +
                 '</div>'
             );
             markers.push(marker);
@@ -235,15 +252,16 @@ $sensorLngJson = json_encode($sensorLng);
                 '<div><i style="background:#dc2626;"></i> 6.0 - 6.9</div>' +
                 '<div><i style="background:#7f1d1d;"></i> &ge; 7.0 (Major)</div>' +
                 '<div><i style="background:#9ca3af;"></i> No magnitude</div>' +
-                '<div style="margin-top:6px;font-size:11px;color:#6b7280;">📡 = Campus sensor</div>';
+                '<div style="margin-top:6px;font-size:11px;color:#6b7280;"><span style="color:#2563eb;font-weight:700;">&#x1F4CC;</span> Campus sensor</div>';
             return div;
         };
         legend.addTo(map);
 
-        // Fit bounds to all markers if there are events, otherwise stay on sensor
+        // Keep map tightly scoped to the campus area.
+        // If there are events, fit them but keep a max zoom of 18 so we don't drift back into town.
         if (markers.length > 0) {
-            const group = L.featureGroup(markers).addLayer(L.marker([SENSOR_LAT, SENSOR_LNG]));
-            map.fitBounds(group.getBounds(), { padding: [40, 40] });
+            const group = L.featureGroup(markers);
+            map.fitBounds(group.getBounds(), { padding: [30, 30], maxZoom: 18 });
         }
     </script>
 </body>
