@@ -55,6 +55,9 @@ requireLogin();
                         <a href="quakebot.php" class="theme-btn-secondary px-4 py-2 rounded-lg font-medium text-sm transition button-hover">
                             QuakeBot
                         </a>
+                        <a href="map.php" class="theme-btn-secondary px-4 py-2 rounded-lg font-medium text-sm transition button-hover">
+                            Map
+                        </a>
                         <a href="reports.php" class="theme-btn-secondary px-4 py-2 rounded-lg font-medium text-sm transition button-hover">
                             Reports
                         </a>
@@ -88,6 +91,9 @@ requireLogin();
                     <span class="theme-text-tertiary text-sm px-4 py-2">Welcome, <span class="theme-text-primary font-medium"><?php echo getAdminName(); ?></span></span>
                     <a href="quakebot.php" class="theme-btn-secondary px-4 py-2 rounded-lg font-medium text-sm transition text-center">
                         QuakeBot
+                    </a>
+                    <a href="map.php" class="theme-btn-secondary px-4 py-2 rounded-lg font-medium text-sm transition text-center">
+                        Map
                     </a>
                     <a href="reports.php" class="theme-btn-secondary px-4 py-2 rounded-lg font-medium text-sm transition text-center">
                         Reports

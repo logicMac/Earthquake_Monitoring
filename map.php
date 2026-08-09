@@ -196,18 +196,26 @@ $sensorLngJson = json_encode($sensorLng);
             .addTo(map)
             .bindPopup('<b>Notre Dame - Siena College of Polomolok</b><br>Campus Sensor: ESP32 + MPU6050<br><span class="text-xs">All events recorded here</span>');
 
+        // The sensor is at the northern edge of campus. Place the simulated
+        // earthquake cluster slightly south of the sensor (toward the school
+        // field) with a very small spread so all pins stay inside the campus.
+        const CAMPUS_OFFSET_LAT = 0.00009; // ~10 m south
+        const CAMPUS_OFFSET_LNG = 0;       // keep same longitude
+        const CLUSTER_LAT = SENSOR_LAT - CAMPUS_OFFSET_LAT;
+        const CLUSTER_LNG = SENSOR_LNG - CAMPUS_OFFSET_LNG;
+
         // Plot each event. Since all events come from the same device,
         // apply a tiny deterministic jitter based on the event id so markers
         // are spread only within the school scope instead of spilling into town.
         const markers = [];
         EVENTS.forEach(function(ev) {
             const id = parseInt(ev.id, 10) || 0;
-            // Deterministic jitter within ~0.0004 degrees (~40-50m) - school scope only
+            // Deterministic jitter within ~0.0002 degrees (~20 m) - campus only
             const seed = (id * 9301 + 49297) % 233280;
-            const jitterLat = ((seed % 1000) / 1000 - 0.5) * 0.0008;
-            const jitterLng = (((seed * 7) % 1000) / 1000 - 0.5) * 0.0008;
-            const lat = SENSOR_LAT + jitterLat;
-            const lng = SENSOR_LNG + jitterLng;
+            const jitterLat = ((seed % 1000) / 1000 - 0.5) * 0.0004;
+            const jitterLng = (((seed * 7) % 1000) / 1000 - 0.5) * 0.0004;
+            const lat = CLUSTER_LAT + jitterLat;
+            const lng = CLUSTER_LNG + jitterLng;
 
             const mag = ev.magnitude !== null && ev.magnitude !== undefined ? parseFloat(ev.magnitude) : null;
             const color = magnitudeColor(mag);
