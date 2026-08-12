@@ -30,7 +30,7 @@ if (isLoggedIn()) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - ND-SCPM Earthquake Monitoring</title>
+    <title>Login - Earthquake Detection and Seismic Monitoring System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/animations.css">
@@ -81,8 +81,8 @@ if (isLoggedIn()) {
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-xl sm:text-2xl font-bold theme-text-primary">ND-SCPM</h1>
-                        <p class="text-xs theme-text-tertiary">Earthquake Monitor</p>
+                        <h1 class="text-xl sm:text-2xl font-bold theme-text-primary">Earthquake Detection and Seismic Monitoring System</h1>
+                        <p class="text-xs theme-text-tertiary">Notre Dame - Siena College of Polomolok</p>
                     </div>
                 </div>
                 <!-- Theme Toggle -->
@@ -166,16 +166,6 @@ if (isLoggedIn()) {
                     </svg>
                 </button>
 
-                <!-- View Earthquake Map (public) -->
-                <a href="map.php" class="block w-full text-center font-semibold py-3.5 rounded-xl border-2 transition duration-200 text-sm sm:text-base"
-                   style="border-color: var(--border-primary); color: var(--text-primary);">
-                    <span class="inline-flex items-center justify-center space-x-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
-                        </svg>
-                        <span>View Earthquake Map</span>
-                    </span>
-                </a>
             </form>
 
             <!-- Divider -->

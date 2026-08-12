@@ -16,7 +16,7 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `earthquake_monitoring`
+-- Database: `earthquake_monitoring` 
 --
 CREATE DATABASE IF NOT EXISTS `earthquake_monitoring` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 USE `earthquake_monitoring`;
@@ -24,7 +24,7 @@ USE `earthquake_monitoring`;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `admin_users`
+-- Table structure for table `admin_users` 
 --
 
 CREATE TABLE `admin_users` (
@@ -38,7 +38,7 @@ CREATE TABLE `admin_users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `admin_users`
+-- Dumping data for table `admin_users` 
 --
 
 INSERT INTO `admin_users` (`id`, `username`, `password`, `full_name`, `email`, `created_at`, `last_login`) VALUES(1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'System Administrator', 'admin@ndscpm.edu.ph', '2026-04-02 23:10:46', '2026-04-17 14:00:39');
@@ -47,7 +47,7 @@ INSERT INTO `admin_users` (`id`, `username`, `password`, `full_name`, `email`, `
 -- --------------------------------------------------------
 
 --
--- Table structure for table `alert_recipients`
+-- Table structure for table `alert_recipients` 
 --
 
 CREATE TABLE `alert_recipients` (
@@ -60,19 +60,16 @@ CREATE TABLE `alert_recipients` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `alert_recipients`
+-- Dumping data for table `alert_recipients` 
 --
 
-INSERT INTO `alert_recipients` (`id`, `name`, `phone_number`, `category`, `is_active`, `created_at`) VALUES(1, 'Admin User', '09171234567', 'admin', 1, '2026-04-02 23:10:46');
-INSERT INTO `alert_recipients` (`id`, `name`, `phone_number`, `category`, `is_active`, `created_at`) VALUES(2, 'Faculty Member', '09181234567', 'faculty', 1, '2026-04-02 23:10:46');
-INSERT INTO `alert_recipients` (`id`, `name`, `phone_number`, `category`, `is_active`, `created_at`) VALUES(3, 'Student User', '09191234567', 'student', 1, '2026-04-02 23:10:46');
 INSERT INTO `alert_recipients` (`id`, `name`, `phone_number`, `category`, `is_active`, `created_at`) VALUES(4, 'Mac', '09518235942', 'student', 0, '2026-04-04 21:40:52');
 INSERT INTO `alert_recipients` (`id`, `name`, `phone_number`, `category`, `is_active`, `created_at`) VALUES(6, 'Tressia', '09518235943', 'student', 1, '2026-06-06 15:55:10');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `seismic_logs`
+-- Table structure for table `seismic_logs` 
 --
 
 CREATE TABLE `seismic_logs` (
@@ -80,6 +77,9 @@ CREATE TABLE `seismic_logs` (
   `device_id` varchar(50) NOT NULL,
   `intensity` decimal(10,2) NOT NULL,
   `magnitude` decimal(3,1) DEFAULT NULL,
+  `mmi_level` varchar(10) DEFAULT NULL,
+  `mmi_name` varchar(50) DEFAULT NULL,
+  `percent_g` float DEFAULT NULL,
   `timestamp` datetime DEFAULT CURRENT_TIMESTAMP,
   `alert_sent` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -87,7 +87,7 @@ CREATE TABLE `seismic_logs` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `sms_logs`
+-- Table structure for table `sms_logs` 
 --
 
 CREATE TABLE `sms_logs` (
@@ -105,32 +105,32 @@ CREATE TABLE `sms_logs` (
 --
 
 --
--- Indexes for table `admin_users`
+-- Indexes for table `admin_users` 
 --
-ALTER TABLE `admin_users`
+ALTER TABLE `admin_users` 
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `username` (`username`);
 
 --
--- Indexes for table `alert_recipients`
+-- Indexes for table `alert_recipients` 
 --
-ALTER TABLE `alert_recipients`
+ALTER TABLE `alert_recipients` 
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `unique_phone` (`phone_number`);
 
 --
--- Indexes for table `seismic_logs`
+-- Indexes for table `seismic_logs` 
 --
-ALTER TABLE `seismic_logs`
+ALTER TABLE `seismic_logs` 
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_timestamp` (`timestamp`),
   ADD KEY `idx_intensity` (`intensity`),
   ADD KEY `idx_magnitude` (`magnitude`);
 
 --
--- Indexes for table `sms_logs`
+-- Indexes for table `sms_logs` 
 --
-ALTER TABLE `sms_logs`
+ALTER TABLE `sms_logs` 
   ADD PRIMARY KEY (`id`),
   ADD KEY `log_id` (`log_id`),
   ADD KEY `recipient_id` (`recipient_id`);
@@ -140,27 +140,27 @@ ALTER TABLE `sms_logs`
 --
 
 --
--- AUTO_INCREMENT for table `admin_users`
+-- AUTO_INCREMENT for table `admin_users` 
 --
-ALTER TABLE `admin_users`
+ALTER TABLE `admin_users` 
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `alert_recipients`
+-- AUTO_INCREMENT for table `alert_recipients` 
 --
-ALTER TABLE `alert_recipients`
+ALTER TABLE `alert_recipients` 
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `seismic_logs`
+-- AUTO_INCREMENT for table `seismic_logs` 
 --
-ALTER TABLE `seismic_logs`
+ALTER TABLE `seismic_logs` 
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `sms_logs`
+-- AUTO_INCREMENT for table `sms_logs` 
 --
-ALTER TABLE `sms_logs`
+ALTER TABLE `sms_logs` 
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
@@ -168,9 +168,9 @@ ALTER TABLE `sms_logs`
 --
 
 --
--- Constraints for table `sms_logs`
+-- Constraints for table `sms_logs` 
 --
-ALTER TABLE `sms_logs`
+ALTER TABLE `sms_logs` 
   ADD CONSTRAINT `sms_logs_ibfk_1` FOREIGN KEY (`log_id`) REFERENCES `seismic_logs` (`id`),
   ADD CONSTRAINT `sms_logs_ibfk_2` FOREIGN KEY (`recipient_id`) REFERENCES `alert_recipients` (`id`);
 
