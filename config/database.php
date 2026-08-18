@@ -68,10 +68,11 @@ define('SMS_SENDER_ID', getenv('SMS_SENDER_ID') ?: 'Unisoft');  // Set via envir
 
 // Groq API Configuration - QuakeBot
 // Get your free API key from: https://console.groq.com/
-// Model: llama-3.3-70b-versatile (Fast & Free)
+// Model: openai/gpt-oss-120b (Fast & Free)
+// Note: Groq deprecated llama-3.3-70b-versatile; use the openai/ prefix for gpt-oss models
 // Features: Natural language queries, data analysis, educational assistant
 define('GROQ_API_URL', 'https://api.groq.com/openai/v1/chat/completions');
 define('GROQ_API_KEY', getenv('GROQ_API_KEY') ?: '');  // Set via environment variable
 
-define('GROQ_MODEL', 'gpt-oss-120b');  // Fast and accurate model
+define('GROQ_MODEL', 'openai/gpt-oss-120b');  // Fast and accurate model (requires openai/ prefix on Groq)
 ?>
