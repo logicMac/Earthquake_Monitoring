@@ -54,7 +54,14 @@ function getDBConnection() {
     
     // Set charset to prevent encoding issues with special characters
     $conn->set_charset("utf8mb4");
-    
+
+    // Force MySQL session timezone to Philippine Time (UTC+8).
+    // Without this, MySQL uses the server's system timezone (usually UTC on
+    // Render/Railway/InfinityFree), so CURRENT_TIMESTAMP / NOW() end up
+    // 8 hours behind Asia/Manila even though PHP's date_default_timezone_set
+    // is set correctly above. PHP's timezone setting does NOT propagate to MySQL.
+    $conn->query("SET time_zone = '+08:00'");
+
     return $conn;
 }
 
