@@ -16,17 +16,34 @@ if (!isLoggedIn()) {
     exit;
 }
 
-// Get user message
+// Get user message + conversation history
 $input = json_decode(file_get_contents('php://input'), true);
 $userMessage = $input['message'] ?? '';
+$history = $input['history'] ?? [];
 
 if (empty($userMessage)) {
     echo json_encode(['error' => 'No message provided']);
     exit;
 }
 
+// Sanitize history — keep only valid role/content pairs, limit to last 10 turns
+$cleanHistory = [];
+if (is_array($history)) {
+    foreach ($history as $msg) {
+        if (isset($msg['role'], $msg['content']) &&
+            in_array($msg['role'], ['user', 'assistant']) &&
+            !empty($msg['content'])) {
+            $cleanHistory[] = [
+                'role' => $msg['role'],
+                'content' => substr($msg['content'], 0, 2000) // prevent oversized payloads
+            ];
+        }
+        if (count($cleanHistory) >= 20) break; // cap at 10 turns (20 messages)
+    }
+}
+
 // Log for debugging (remove in production)
-error_log("QuakeBot: Received message: " . $userMessage);
+error_log("QuakeBot: Received message: " . $userMessage . " | History: " . count($cleanHistory) . " messages");
 
 // Get earthquake data context — wrap in try-catch so handler always returns JSON
 try {
@@ -37,8 +54,8 @@ try {
     // Build system prompt with context
     $systemPrompt = buildSystemPrompt($context);
 
-    // Call Groq API
-    $response = callGroqAPI($systemPrompt, $userMessage);
+    // Call Groq API with conversation history
+    $response = callGroqAPI($systemPrompt, $userMessage, $cleanHistory);
 
     // Log response for debugging
     error_log("QuakeBot: Response - " . json_encode($response));
@@ -174,7 +191,7 @@ function formatRecentEvents($events) {
 /**
  * Call Groq API
  */
-function callGroqAPI($systemPrompt, $userMessage) {
+function callGroqAPI($systemPrompt, $userMessage, $history = []) {
     // Prefer env var (supports .env via environment configuration / php-fpm / WAMP)
     $apiKey = getenv('GROQ_API_KEY');
 
@@ -190,18 +207,31 @@ function callGroqAPI($systemPrompt, $userMessage) {
         ];
     }
     
+    // Build messages array: system prompt + conversation history + current message
+    $messages = [
+        [
+            'role' => 'system',
+            'content' => $systemPrompt
+        ]
+    ];
+
+    // Append conversation history (previous user/assistant turns)
+    foreach ($history as $msg) {
+        $messages[] = [
+            'role' => $msg['role'],
+            'content' => $msg['content']
+        ];
+    }
+
+    // Append current user message
+    $messages[] = [
+        'role' => 'user',
+        'content' => $userMessage
+    ];
+
     $data = [
         'model' => GROQ_MODEL,
-        'messages' => [
-            [
-                'role' => 'system',
-                'content' => $systemPrompt
-            ],
-            [
-                'role' => 'user',
-                'content' => $userMessage
-            ]
-        ],
+        'messages' => $messages,
         'temperature' => 0.7,
         'max_tokens' => 500,
         'top_p' => 1,
