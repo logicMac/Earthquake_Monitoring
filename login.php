@@ -75,10 +75,8 @@ if (isLoggedIn()) {
             <!-- Header with Logo and Theme Toggle -->
             <div class="flex items-center justify-between mb-8 sm:mb-10">
                 <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 sm:w-14 sm:h-14 logo-icon rounded-xl flex items-center justify-center shadow-xl animate-scale-in">
-                        <svg class="w-7 h-7 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 logo-icon rounded-full flex items-center justify-center shadow-xl animate-scale-in overflow-hidden">
+                        <img src="assets/logo.png" alt="ND-SCPM Logo" class="w-full h-full object-cover">
                     </div>
                     <div>
                         <h1 class="text-xl sm:text-2xl font-bold theme-text-primary">Earthquake Detection and Seismic Monitoring System</h1>

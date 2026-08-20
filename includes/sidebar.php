@@ -28,10 +28,8 @@ $navItems = [
         </svg>
     </button>
     <div class="flex items-center space-x-2">
-        <div class="w-8 h-8 logo-icon rounded-lg flex items-center justify-center">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-            </svg>
+        <div class="w-8 h-8 logo-icon rounded-full flex items-center justify-center overflow-hidden">
+            <img src="assets/logo.png" alt="ND-SCPM Logo" class="w-full h-full object-cover">
         </div>
         <span class="font-bold text-sm theme-text-primary">EDSSMS</span>
     </div>
@@ -54,10 +52,8 @@ $navItems = [
     <!-- Logo / Brand + Collapse Toggle -->
     <div class="flex items-center px-4 py-5 flex-shrink-0 sidebar-header" style="border-bottom: 1px solid var(--nav-border);">
         <div class="flex items-center space-x-3 flex-1 min-w-0 sidebar-brand">
-            <div class="w-11 h-11 logo-icon rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                </svg>
+            <div class="w-11 h-11 logo-icon rounded-full flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
+                <img src="assets/logo.png" alt="ND-SCPM Logo" class="w-full h-full object-cover">
             </div>
             <div class="sidebar-label min-w-0">
                 <h1 class="text-base font-bold theme-text-primary whitespace-nowrap">EDSSMS</h1>

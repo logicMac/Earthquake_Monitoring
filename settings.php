@@ -87,7 +87,7 @@ $conn->close();
 <body>
     <?php include 'includes/sidebar.php'; ?>
 
-    <div class="sidebar-content px-4 sm:px-6 py-4 sm:py-8 max-w-3xl mx-auto">
+    <div class="sidebar-content px-4 sm:px-6 py-4 sm:py-8">
         <!-- Page Header -->
         <div class="mb-6 animate-scale-in">
             <h1 class="text-2xl sm:text-3xl font-bold theme-text-primary mb-1">Account Settings</h1>
