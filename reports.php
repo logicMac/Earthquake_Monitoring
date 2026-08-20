@@ -14,6 +14,11 @@ $date_from = $_GET['date_from'] ?? date('Y-m-d', strtotime('-30 days'));
 $date_to = $_GET['date_to'] ?? date('Y-m-d');
 $min_intensity = $_GET['min_intensity'] ?? 0;
 
+// ── Pagination ──────────────────────────────────────────────────────
+$per_page = 15; // events per page
+$page = max(1, (int)($_GET['page'] ?? 1));
+$offset = ($page - 1) * $per_page;
+
 // Get statistics
 $stats_query = "SELECT 
     COUNT(*) as total_events,
@@ -32,13 +37,26 @@ $stmt->execute();
 $stats = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
-// Get events data
+// Count total matching events (for pagination)
+$count_query = "SELECT COUNT(*) as total FROM seismic_logs 
+WHERE DATE(timestamp) BETWEEN ? AND ? AND intensity >= ?";
+$stmt = $conn->prepare($count_query);
+$stmt->bind_param("ssd", $date_from, $date_to, $min_intensity);
+$stmt->execute();
+$total_events = (int)$stmt->get_result()->fetch_assoc()['total'];
+$stmt->close();
+
+$total_pages = max(1, ceil($total_events / $per_page));
+// Clamp page if out of range
+if ($page > $total_pages) { $page = $total_pages; $offset = ($page - 1) * $per_page; }
+
+// Get events data (paginated)
 $events_query = "SELECT * FROM seismic_logs 
 WHERE DATE(timestamp) BETWEEN ? AND ? AND intensity >= ?
-ORDER BY timestamp DESC";
+ORDER BY timestamp DESC LIMIT ? OFFSET ?";
 
 $stmt = $conn->prepare($events_query);
-$stmt->bind_param("ssd", $date_from, $date_to, $min_intensity);
+$stmt->bind_param("ssdii", $date_from, $date_to, $min_intensity, $per_page, $offset);
 $stmt->execute();
 $events = $stmt->get_result();
 $stmt->close();
@@ -377,6 +395,95 @@ $sms_count = $conn->query("SELECT COUNT(*) as count FROM sms_logs WHERE DATE(sen
                     </tbody>
                 </table>
             </div>
+
+            <!-- Pagination -->
+            <?php if ($total_events > 0): ?>
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t no-print" style="border-color: var(--border-primary);">
+                <!-- Info -->
+                <p class="text-sm theme-text-tertiary">
+                    Showing <span class="font-semibold theme-text-primary"><?php echo $offset + 1; ?></span>–<span class="font-semibold theme-text-primary"><?php echo min($offset + $per_page, $total_events); ?></span>
+                    of <span class="font-semibold theme-text-primary"><?php echo $total_events; ?></span> events
+                </p>
+
+                <!-- Page buttons -->
+                <div class="flex items-center gap-1.5">
+                    <?php
+                    // Build base query string (preserve filters, exclude page)
+                    $baseParams = http_build_query([
+                        'date_from' => $date_from,
+                        'date_to' => $date_to,
+                        'min_intensity' => $min_intensity
+                    ]);
+
+                    // Determine page range to show (max 7 buttons)
+                    $startPage = max(1, $page - 3);
+                    $endPage = min($total_pages, $page + 3);
+                    if ($endPage - $startPage < 6) {
+                        if ($startPage == 1) $endPage = min($total_pages, $startPage + 6);
+                        else $startPage = max(1, $endPage - 6);
+                    }
+                    ?>
+
+                    <!-- Previous button -->
+                    <?php if ($page > 1): ?>
+                        <a href="?<?php echo $baseParams; ?>&page=<?php echo $page - 1; ?>"
+                           class="px-3 py-2 rounded-lg text-sm font-semibold theme-btn-secondary border transition hover:scale-105">
+                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        </a>
+                    <?php else: ?>
+                        <span class="px-3 py-2 rounded-lg text-sm font-semibold opacity-40 cursor-not-allowed theme-btn-secondary border">
+                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        </span>
+                    <?php endif; ?>
+
+                    <!-- First page + ellipsis -->
+                    <?php if ($startPage > 1): ?>
+                        <a href="?<?php echo $baseParams; ?>&page=1"
+                           class="px-3 py-2 rounded-lg text-sm font-semibold theme-btn-secondary border transition hover:scale-105">1</a>
+                        <?php if ($startPage > 2): ?>
+                            <span class="px-2 theme-text-tertiary">…</span>
+                        <?php endif; ?>
+                    <?php endif; ?>
+
+                    <!-- Page number buttons -->
+                    <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+                        <?php if ($i == $page): ?>
+                            <span class="px-3.5 py-2 rounded-lg text-sm font-bold theme-btn-primary border">
+                                <?php echo $i; ?>
+                            </span>
+                        <?php else: ?>
+                            <a href="?<?php echo $baseParams; ?>&page=<?php echo $i; ?>"
+                               class="px-3.5 py-2 rounded-lg text-sm font-semibold theme-btn-secondary border transition hover:scale-105">
+                                <?php echo $i; ?>
+                            </a>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+
+                    <!-- Last page + ellipsis -->
+                    <?php if ($endPage < $total_pages): ?>
+                        <?php if ($endPage < $total_pages - 1): ?>
+                            <span class="px-2 theme-text-tertiary">…</span>
+                        <?php endif; ?>
+                        <a href="?<?php echo $baseParams; ?>&page=<?php echo $total_pages; ?>"
+                           class="px-3 py-2 rounded-lg text-sm font-semibold theme-btn-secondary border transition hover:scale-105">
+                            <?php echo $total_pages; ?>
+                        </a>
+                    <?php endif; ?>
+
+                    <!-- Next button -->
+                    <?php if ($page < $total_pages): ?>
+                        <a href="?<?php echo $baseParams; ?>&page=<?php echo $page + 1; ?>"
+                           class="px-3 py-2 rounded-lg text-sm font-semibold theme-btn-secondary border transition hover:scale-105">
+                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    <?php else: ?>
+                        <span class="px-3 py-2 rounded-lg text-sm font-semibold opacity-40 cursor-not-allowed theme-btn-secondary border">
+                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </span>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
 
         <!-- Print-only Events Table -->
@@ -396,8 +503,11 @@ $sms_count = $conn->query("SELECT COUNT(*) as count FROM sms_logs WHERE DATE(sen
                 </thead>
                 <tbody>
                     <?php
-                    // Re-query for print table since the screen loop already consumed the result
-                    $print_stmt = $conn->prepare($events_query);
+                    // Re-query for print table — ALL events, no pagination
+                    $print_query = "SELECT * FROM seismic_logs 
+WHERE DATE(timestamp) BETWEEN ? AND ? AND intensity >= ?
+ORDER BY timestamp DESC";
+                    $print_stmt = $conn->prepare($print_query);
                     $print_stmt->bind_param("ssd", $date_from, $date_to, $min_intensity);
                     $print_stmt->execute();
                     $print_events = $print_stmt->get_result();

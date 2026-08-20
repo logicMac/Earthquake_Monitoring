@@ -111,12 +111,19 @@ try {
         /* ── Markdown content ───────────────────────────────────────── */
         .bot-message strong { font-weight: 700; }
         .bot-message em { font-style: italic; }
+        .bot-message {
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+            min-width: 0;
+        }
         .bot-message code {
             background: var(--bg-tertiary);
             padding: 2px 6px;
             border-radius: 4px;
             font-family: 'Courier New', monospace;
             font-size: 0.875em;
+            overflow-wrap: break-word;
         }
         .bot-message pre {
             background: var(--bg-tertiary);
@@ -324,7 +331,7 @@ try {
 <body>
     <?php include 'includes/sidebar.php'; ?>
 
-    <div class="sidebar-content px-4 sm:px-6 py-4 sm:py-8 w-full">
+    <div class="sidebar-content px-4 sm:px-6 py-4 sm:py-8 overflow-x-hidden">
         <!-- ═══ QuakeBot Header ═══════════════════════════════════════ -->
         <div class="theme-card rounded-2xl p-5 sm:p-6 mb-5 animate-scale-in overflow-hidden relative">
             <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-10" style="background: radial-gradient(circle, #2563eb 0%, transparent 70%);"></div>
@@ -778,7 +785,7 @@ try {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                         </svg>
                     </div>
-                    <div class="flex flex-col items-end gap-1 max-w-[85%] sm:max-w-[75%]">
+                    <div class="flex flex-col items-end gap-1 max-w-[85%] sm:max-w-[75%] min-w-0">
                         <div class="user-message rounded-2xl rounded-tr-sm px-4 py-3">
                             <p class="text-sm sm:text-base">${escapeHtml(text)}</p>
                         </div>
@@ -810,7 +817,7 @@ try {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 14c0.5 0.5 1.5 1 2 1s1.5-0.5 2-1"></path>
                         </svg>
                     </div>
-                    <div class="flex flex-col items-start gap-1 max-w-[85%] sm:max-w-[75%]">
+                    <div class="flex flex-col items-start gap-1 max-w-[85%] sm:max-w-[75%] min-w-0">
                         <div class="bot-message rounded-2xl rounded-tl-sm px-4 py-3 ${errorClass}">
                             <div class="theme-text-primary text-sm sm:text-base">${formattedContent}</div>
                         </div>
