@@ -258,19 +258,29 @@ $activePage = 'dashboard';
             fetch('api/get_data.php')
                 .then(response => response.json())
                 .then(data => {
+                    // Reset status to normal on successful fetch
+                    const statusEl = document.getElementById('systemStatus');
+                    if (statusEl) {
+                        statusEl.textContent = 'MONITORING';
+                        statusEl.className = 'text-xl sm:text-2xl font-bold text-green-600 mb-1';
+                    }
+
                     if (data.latest) {
-                        // Check if the latest reading is stale (older than 5 minutes).
-                        // The ESP32 only sends data while an alert is active
-                        // (ALARM_ACTIVE / VERIFICATION / COUNTDOWN). When IDLE,
-                        // it sends nothing, so the "latest" row could be hours
-                        // old. Show "No recent activity" instead of a stale value.
+                        const intensity = parseFloat(data.latest.intensity);
                         const lastTime = new Date(data.latest.timestamp).getTime();
                         const ageMs = Date.now() - lastTime;
                         const STALE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
                         const isStale = ageMs > STALE_THRESHOLD;
 
-                        if (isStale) {
-                            // Last reading is old — system is idle/safe
+                        // SAFETY: Never hide high-intensity readings as "stale".
+                        // If intensity >= 14 Gal (firmware THRESHOLD_WARNING),
+                        // this is a real event and MUST be shown regardless of
+                        // timestamp age. The stale check only applies to
+                        // low-intensity readings where the system should be idle.
+                        // This prevents timezone mismatches (server UTC vs
+                        // browser PHT) from hiding real earthquake alerts.
+                        if (isStale && intensity < 14) {
+                            // Last reading is old AND low intensity — system is idle/safe
                             document.getElementById('currentIntensity').textContent = '0.00';
                             document.getElementById('currentMagnitude').textContent = '-';
                             document.getElementById('currentMMI').textContent = 'Safe';
@@ -279,8 +289,8 @@ $activePage = 'dashboard';
                                 'Last: ' + new Date(data.latest.timestamp).toLocaleString('en-PH', {timeZone: 'Asia/Manila'});
                             document.getElementById('alertBanner').classList.add('hidden');
                         } else {
-                            // Update current intensity
-                            document.getElementById('currentIntensity').textContent = parseFloat(data.latest.intensity).toFixed(2);
+                            // Show actual data — either fresh, or high-intensity (always show)
+                            document.getElementById('currentIntensity').textContent = intensity.toFixed(2);
 
                             // Update magnitude display
                             const magnitudeDisplay = data.latest.magnitude ?
@@ -299,15 +309,15 @@ $activePage = 'dashboard';
                                 `M${parseFloat(data.latest.magnitude).toFixed(1)}` :
                                 '';
                             const eventText = magnitudeText ?
-                                `${magnitudeText} - ${parseFloat(data.latest.intensity).toFixed(2)} Gal` :
-                                `${parseFloat(data.latest.intensity).toFixed(2)} Gal`;
+                                `${magnitudeText} - ${intensity.toFixed(2)} Gal` :
+                                `${intensity.toFixed(2)} Gal`;
                             document.getElementById('lastEvent').textContent = eventText;
                             document.getElementById('lastEventTime').textContent =
                                 new Date(data.latest.timestamp).toLocaleString('en-PH', {timeZone: 'Asia/Manila'});
 
                             // Show alert banner if high intensity (matches firmware THRESHOLD_STRONG = 115 Gal)
                             const alertBanner = document.getElementById('alertBanner');
-                            if (parseFloat(data.latest.intensity) >= 115) {
+                            if (intensity >= 115) {
                                 alertBanner.classList.remove('hidden');
                             } else {
                                 alertBanner.classList.add('hidden');
@@ -331,7 +341,17 @@ $activePage = 'dashboard';
                     // Update logs table
                     updateLogsTable(data.recent);
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    console.error('Dashboard fetch error:', error);
+                    // Show connection error on the status card so the user
+                    // knows the server is unreachable (Render cold-start,
+                    // network issue, etc.) instead of silently failing.
+                    const statusEl = document.getElementById('systemStatus');
+                    if (statusEl) {
+                        statusEl.textContent = 'CONNECTION ERROR';
+                        statusEl.className = 'text-xl sm:text-2xl font-bold text-red-600 mb-1';
+                    }
+                });
         }
 
         function updateLogsTable(logs) {

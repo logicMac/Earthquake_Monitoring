@@ -1331,7 +1331,12 @@ void sendDataToServer(
     serverUrl
   );
 
-  http.setTimeout(8000);
+  // 30s timeout — Render free tier cold-starts take ~60s, but 30s is a
+  // compromise: long enough to survive most warm-server delays, short
+  // enough to not freeze the sensor loop for too long. If the server is
+  // cold-starting, the first POST will fail but subsequent ones will
+  // succeed once the server is awake.
+  http.setTimeout(30000);
 
   http.addHeader(
     "Content-Type",
