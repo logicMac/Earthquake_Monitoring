@@ -259,37 +259,59 @@ $activePage = 'dashboard';
                 .then(response => response.json())
                 .then(data => {
                     if (data.latest) {
-                        // Update current intensity
-                        document.getElementById('currentIntensity').textContent = parseFloat(data.latest.intensity).toFixed(2);
-                        
-                        // Update magnitude display
-                        const magnitudeDisplay = data.latest.magnitude ? 
-                            parseFloat(data.latest.magnitude).toFixed(1) : 
-                            'N/A';
-                        document.getElementById('currentMagnitude').textContent = magnitudeDisplay;
-                        
-                        // Update MMI display
-                        const mmiDisplay = data.latest.mmi_level ? 
-                            `${data.latest.mmi_level}` : 
-                            'N/A';
-                        document.getElementById('currentMMI').textContent = mmiDisplay;
-                        
-                        // Update last event
-                        const magnitudeText = data.latest.magnitude ? 
-                            `M${parseFloat(data.latest.magnitude).toFixed(1)}` : 
-                            '';
-                        const eventText = magnitudeText ? 
-                            `${magnitudeText} - ${parseFloat(data.latest.intensity).toFixed(2)} Gal` :
-                            `${parseFloat(data.latest.intensity).toFixed(2)} Gal`;
-                        document.getElementById('lastEvent').textContent = eventText;
-                        document.getElementById('lastEventTime').textContent = new Date(data.latest.timestamp).toLocaleString();
-                        
-                        // Show alert banner if high intensity
-                        const alertBanner = document.getElementById('alertBanner');
-                        if (parseFloat(data.latest.intensity) >= 80) {
-                            alertBanner.classList.remove('hidden');
+                        // Check if the latest reading is stale (older than 5 minutes).
+                        // The ESP32 only sends data while an alert is active
+                        // (ALARM_ACTIVE / VERIFICATION / COUNTDOWN). When IDLE,
+                        // it sends nothing, so the "latest" row could be hours
+                        // old. Show "No recent activity" instead of a stale value.
+                        const lastTime = new Date(data.latest.timestamp).getTime();
+                        const ageMs = Date.now() - lastTime;
+                        const STALE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+                        const isStale = ageMs > STALE_THRESHOLD;
+
+                        if (isStale) {
+                            // Last reading is old — system is idle/safe
+                            document.getElementById('currentIntensity').textContent = '0.00';
+                            document.getElementById('currentMagnitude').textContent = '-';
+                            document.getElementById('currentMMI').textContent = 'Safe';
+                            document.getElementById('lastEvent').textContent = 'NO RECENT ACTIVITY';
+                            document.getElementById('lastEventTime').textContent =
+                                'Last: ' + new Date(data.latest.timestamp).toLocaleString('en-PH', {timeZone: 'Asia/Manila'});
+                            document.getElementById('alertBanner').classList.add('hidden');
                         } else {
-                            alertBanner.classList.add('hidden');
+                            // Update current intensity
+                            document.getElementById('currentIntensity').textContent = parseFloat(data.latest.intensity).toFixed(2);
+
+                            // Update magnitude display
+                            const magnitudeDisplay = data.latest.magnitude ?
+                                parseFloat(data.latest.magnitude).toFixed(1) :
+                                'N/A';
+                            document.getElementById('currentMagnitude').textContent = magnitudeDisplay;
+
+                            // Update MMI display
+                            const mmiDisplay = data.latest.mmi_level ?
+                                `${data.latest.mmi_level}` :
+                                'N/A';
+                            document.getElementById('currentMMI').textContent = mmiDisplay;
+
+                            // Update last event
+                            const magnitudeText = data.latest.magnitude ?
+                                `M${parseFloat(data.latest.magnitude).toFixed(1)}` :
+                                '';
+                            const eventText = magnitudeText ?
+                                `${magnitudeText} - ${parseFloat(data.latest.intensity).toFixed(2)} Gal` :
+                                `${parseFloat(data.latest.intensity).toFixed(2)} Gal`;
+                            document.getElementById('lastEvent').textContent = eventText;
+                            document.getElementById('lastEventTime').textContent =
+                                new Date(data.latest.timestamp).toLocaleString('en-PH', {timeZone: 'Asia/Manila'});
+
+                            // Show alert banner if high intensity (matches firmware THRESHOLD_STRONG = 115 Gal)
+                            const alertBanner = document.getElementById('alertBanner');
+                            if (parseFloat(data.latest.intensity) >= 115) {
+                                alertBanner.classList.remove('hidden');
+                            } else {
+                                alertBanner.classList.add('hidden');
+                            }
                         }
                     }
                     
@@ -324,7 +346,7 @@ $activePage = 'dashboard';
                 const mmiText = log.mmi_level ? `${log.mmi_level} - ${log.mmi_name}` : 'N/A';
                 const mmiColor = getMMIColor(log.mmi_level);
                 const delay = Math.min(index * 50, 400);
-                const intensityColor = parseFloat(log.intensity) >= 80 ? 'text-red-600' : 'theme-text-primary';
+                const intensityColor = parseFloat(log.intensity) >= 115 ? 'text-red-600' : 'theme-text-primary';
                 const magnitudeText = log.magnitude ? parseFloat(log.magnitude).toFixed(1) : 'N/A';
                 const magnitudeColor = log.magnitude >= 7.0 ? 'text-red-600' : (log.magnitude >= 5.0 ? 'text-orange-600' : 'theme-text-primary');
                 
